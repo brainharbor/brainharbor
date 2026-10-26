@@ -15,7 +15,7 @@ services:
       - ${MODELS_DIR:-./data/models}:/root/.ollama
     environment:
       OLLAMA_KEEP_ALIVE: ${OLLAMA_KEEP_ALIVE:-30m}
-      OLLAMA_CONTEXT_LENGTH: ${OLLAMA_CONTEXT_LENGTH:-8192}
+      OLLAMA_CONTEXT_LENGTH: ${OLLAMA_CONTEXT_LENGTH:-16384}
     healthcheck:
       test: ["CMD", "ollama", "list"]
       interval: 15s
@@ -31,6 +31,8 @@ services:
         condition: service_healthy
     volumes:
       - ${WEBUI_DATA_DIR:-./data/webui}:/app/backend/data
+    # Default model, thinking off, Hungarian system prompt (first start only).
+    env_file: open-webui/defaults.env
     environment:
       OLLAMA_BASE_URL: http://ollama:11434
       WEBUI_SECRET_KEY: ${WEBUI_SECRET_KEY:?Set WEBUI_SECRET_KEY in .env (openssl rand -hex 32)}

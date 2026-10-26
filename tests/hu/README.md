@@ -96,6 +96,22 @@ Prompt tokens here are much fewer than in Open WebUI, which also sends the
 chat history and its tool descriptions. That makes the numbers comparable
 between models, not equal to what users see in the chat window.
 
+## Checking brainharbor-hu
+
+The `modelfile` variant sends no system prompt or temperature, so the model
+uses its own from the Modelfile. With the same seed, `brainharbor-hu` should
+answer like `gemma4:26b` with `hu-v3-nothink`, with the same prompt token
+counts. In the first check (2026-10-26) 14 of 18 answers were identical word
+for word; the other 4 were all in run 1, so most likely Ollama's prompt
+cache, still holding earlier requests, nudged the numbers. Different prompt
+token counts, or differences in every run, mean the Modelfile and
+`prompts/hu-v3.txt` have drifted apart. `modelfile-16k` does the same with a
+16k context, to measure what that costs in speed.
+
+```sh
+python3 tests/hu/run.py --models brainharbor-hu --variants modelfile,modelfile-16k
+```
+
 ## Adding cases and variants
 
 A case needs an `id` and a `prompt`; `require` is optional. A variant can

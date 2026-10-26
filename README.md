@@ -13,6 +13,8 @@ sending anything to a cloud service.
 | [Ollama](https://github.com/ollama/ollama) | Runs the language and embedding models, on the GPU when available |
 | [Open WebUI](https://github.com/open-webui/open-webui) | Chat interface, user accounts, document upload and search (RAG) |
 | [Caddy](https://caddyserver.com) | HTTPS in front of everything; the only service exposed on the host |
+| `ollama/` | `brainharbor-hu`: gemma4:26b with the Hungarian system prompt and settings that tested best |
+| `open-webui/` | Open WebUI defaults: default model, thinking off, Hungarian system prompt |
 | `scripts/` | Pre-flight checks, model downloads, and (soon) backup and restore |
 | `tests/hu/` | Hungarian language tests: same questions to every model, mistakes counted |
 
@@ -21,7 +23,8 @@ Versions are pinned in `.env.example` and only changed together with a test run.
 ## Requirements
 
 - Linux with Docker Engine and the Docker Compose plugin
-- 16 GB RAM or more
+- 32 GB RAM recommended: the default model needs about 20 GB of VRAM and
+  RAM together
 - Optional but strongly recommended: an NVIDIA GPU with 8 GB+ VRAM,
   a recent driver (570+ for RTX 50-series) and the NVIDIA Container Toolkit
 - ~50 GB free disk for models
@@ -36,7 +39,7 @@ cp .env.example .env
 
 scripts/preflight.sh            # checks the host; add --gpu-test for a GPU smoke test
 docker compose up -d
-scripts/pull-models.sh          # downloads the models listed in .env
+scripts/pull-models.sh          # downloads the models, builds brainharbor-hu
 ```
 
 Open `https://<DOMAIN>` and create the first account; it becomes the administrator.
@@ -51,11 +54,23 @@ docker compose cp caddy:/data/caddy/pki/authorities/local/root.crt ./brainharbor
 
 and import it on client machines.
 
+## Hungarian defaults
+
+Out of the box, new chats use `brainharbor-hu`: gemma4:26b with a Hungarian
+system prompt, temperature 0.3 and thinking turned off. This setup made the
+fewest mistakes in our Hungarian tests, and thinking only made answers
+slower. It still makes some: have a person read what goes out.
+
+- `ollama/brainharbor-hu.Modelfile` holds the model, the system prompt and
+  the temperature. `scripts/pull-models.sh` builds it.
+- `open-webui/defaults.env` makes it the default model, turns thinking off
+  and sets the same system prompt in Open WebUI.
+
 ## Good to know
 
 - Open WebUI stores most settings in its own database after the first start.
-  Changing the related `.env` values later has no effect; change them in
-  the admin panel instead.
+  Changing the related `.env` values or `open-webui/defaults.env` later has
+  no effect; change them in the admin panel instead.
 - Open WebUI is used unmodified and keeps its own branding, as its
   [license](https://docs.openwebui.com/license/) requires.
 
