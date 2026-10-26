@@ -23,8 +23,8 @@ Versions are pinned in `.env.example` and only changed together with a test run.
 ## Requirements
 
 - Linux with Docker Engine and the Docker Compose plugin
-- 32 GB RAM recommended: the default model needs about 20 GB of VRAM and
-  RAM together
+- 32 GB RAM recommended: the default model is an 18 GB download and needs
+  about 20 GB of VRAM and RAM together
 - Optional but strongly recommended: an NVIDIA GPU with 8 GB+ VRAM,
   a recent driver (570+ for RTX 50-series) and the NVIDIA Container Toolkit
 - ~50 GB free disk for models
@@ -52,7 +52,11 @@ root certificate. Export it with:
 docker compose cp caddy:/data/caddy/pki/authorities/local/root.crt ./brainharbor-root.crt
 ```
 
-and import it on client machines.
+and import it on client machines as a trusted root (certificate authority).
+Firefox keeps its own list: Settings > Privacy & Security > Certificates >
+View Certificates > Authorities > Import, then tick "Trust this CA to
+identify websites". Don't just accept the browser's warning instead: Caddy
+renews its local certificates every 12 hours, and the warning comes back.
 
 ## Hungarian defaults
 
@@ -65,6 +69,13 @@ slower. It still makes some: have a person read what goes out.
   the temperature. `scripts/pull-models.sh` builds it.
 - `open-webui/defaults.env` makes it the default model, turns thinking off
   and sets the same system prompt in Open WebUI.
+
+## Storage
+
+All data lives in `data/` next to `compose.yaml`: models, Open WebUI's
+database and uploads, and Caddy's certificates. On ZFS, see
+[docs/zfs.md](docs/zfs.md) for a dataset layout with suitable settings,
+and how to move an existing install onto it.
 
 ## Good to know
 
@@ -86,7 +97,7 @@ See [tests/hu/README.md](tests/hu/README.md).
 - [x] Compose stack with GPU support and HTTPS
 - [x] Pre-flight check script
 - [x] Hungarian language test suite
-- [ ] ZFS-friendly data layout and documentation
+- [x] ZFS-friendly data layout and documentation
 - [ ] Backup and restore scripts, tested on a clean machine
 - [ ] Hungarian and English documentation
 - [ ] CI: shellcheck, compose validation
