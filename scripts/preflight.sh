@@ -145,7 +145,7 @@ else
     if ((vram_gib >= 20)); then
       info "Fits ~27–32B models fully on the GPU at 4-bit."
     elif ((vram_gib >= 11)); then
-      info "Fits ~12–14B models fully on the GPU at 4-bit (e.g. gemma3:12b)."
+      info "Fits ~12–14B models fully on the GPU at 4-bit (e.g. gemma4:12b)."
     elif ((vram_gib >= 7)); then
       info "Fits ~7–9B models fully on the GPU at 4-bit."
     else
@@ -211,20 +211,28 @@ check_dir "Caddy data" CADDY_DATA_DIR ./data/caddy 1
 # ---------------------------------------------------------------------------
 section "Network"
 
-for key in HTTP_PORT HTTPS_PORT; do
-  port="$(env_get "$key" "$([[ $key == HTTP_PORT ]] && echo 80 || echo 443)")"
-  listeners=""
+# check_port ENV_KEY DEFAULT SERVICE CONTAINER_PORT
+check_port() {
+  local key="$1" service="$3" port listeners="" published=""
+  port="$(env_get "$key" "$2")"
   have ss && listeners="$(ss -ltnH "sport = :${port}" 2>/dev/null)"
-  if [[ -n $listeners ]]; then
-    if ((docker_ok)) && [[ "$(compose ps --status running --services 2>/dev/null)" == *caddy* ]]; then
-      pass "Port ${port} is used by brAInharbor's own Caddy"
-    else
-      fail "Port ${port} is already in use; free it or change ${key} in .env"
-    fi
-  else
+  if [[ -z $listeners ]]; then
     pass "Port ${port} is free"
+    return
   fi
-done
+  ((docker_ok)) && published="$(compose port "$service" "$4" 2>/dev/null || true)"
+  if [[ $published == *:"$port" ]]; then
+    pass "Port ${port} is used by brAInharbor's own ${service}"
+  else
+    fail "Port ${port} is already in use; free it or change ${key} in .env"
+  fi
+}
+
+check_port HTTP_PORT 80 caddy 80
+check_port HTTPS_PORT 443 caddy 443
+if [[ $compose_files == *compose.ollama-api.yaml* ]]; then
+  check_port OLLAMA_API_PORT 11434 ollama 11434
+fi
 
 domain="$(env_get DOMAIN)"
 if [[ -n $domain ]]; then

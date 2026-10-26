@@ -14,7 +14,7 @@ if [[ $'\n'$running$'\n' != *$'\n'ollama$'\n'* ]]; then
   exit 1
 fi
 
-read -r -a models <<<"$(env_get CHAT_MODELS gemma3:12b) $(env_get EMBEDDING_MODEL bge-m3)"
+read -r -a models <<<"$(env_get CHAT_MODELS gemma4:12b) $(env_get EMBEDDING_MODEL bge-m3)"
 
 for model in "${models[@]}"; do
   printf '%sPulling %s%s\n' "$C_BOLD" "$model" "$C_RESET"

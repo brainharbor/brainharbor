@@ -14,6 +14,7 @@ sending anything to a cloud service.
 | [Open WebUI](https://github.com/open-webui/open-webui) | Chat interface, user accounts, document upload and search (RAG) |
 | [Caddy](https://caddyserver.com) | HTTPS in front of everything; the only service exposed on the host |
 | `scripts/` | Pre-flight checks, model downloads, and (soon) backup and restore |
+| `tests/hu/` | Hungarian language tests: same questions to every model, mistakes counted |
 
 Versions are pinned in `.env.example` and only changed together with a test run.
 
@@ -58,10 +59,18 @@ and import it on client machines.
 - Open WebUI is used unmodified and keeps its own branding, as its
   [license](https://docs.openwebui.com/license/) requires.
 
+## Testing Hungarian output
+
+Small local models make mistakes in Hungarian, and they differ a lot.
+`tests/hu/run.py` asks each model the same questions several times, measures
+speed, and flags spelling errors, foreign characters and known mistakes.
+See [tests/hu/README.md](tests/hu/README.md).
+
 ## Roadmap to v0.1
 
 - [x] Compose stack with GPU support and HTTPS
 - [x] Pre-flight check script
+- [x] Hungarian language test suite
 - [ ] ZFS-friendly data layout and documentation
 - [ ] Backup and restore scripts, tested on a clean machine
 - [ ] Hungarian and English documentation

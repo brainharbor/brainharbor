@@ -1,0 +1,9 @@
+# Publishes the Ollama API on this host only (127.0.0.1), for local tools
+# such as the Hungarian test suite (tests/hu/run.py). Other machines can't
+# reach it. Enable it in .env:
+#   COMPOSE_FILE=compose.yaml:compose.gpu.yaml:compose.ollama-api.yaml
+
+services:
+  ollama:
+    ports:
+      - "127.0.0.1:${OLLAMA_API_PORT:-11434}:11434"

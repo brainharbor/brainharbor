@@ -1,0 +1,122 @@
+# Hungarian language test suite for brAInharbor, read by run.py.
+# One request = one model x one variant x one case x one run.
+
+# Defaults for a plain "python3 tests/hu/run.py"; command-line options win.
+[run]
+# Empty means CHAT_MODELS from .env.
+models = []
+variants = ["hu-example"]
+runs = 3
+# grouped: model by model, fewest model loads (best on a single GPU)
+# interleaved: models take turns on every request (slow if they don't fit in memory together)
+# shuffle: random order, reproducible with --seed
+order = "grouped"
+
+# ---------------------------------------------------------------------------
+# Variants: system prompt and Ollama options. "think" is optional; leave it
+# out to use the model's own default, as Open WebUI does.
+
+[variants.bare]
+description = "No system prompt, model defaults"
+
+[variants.hu-short]
+description = "Short Hungarian system prompt, temperature 0.3"
+system_file = "prompts/hu-short.txt"
+options = { temperature = 0.3 }
+
+[variants.hu-example]
+description = "Hungarian system prompt with a style example, temperature 0.3"
+system_file = "prompts/hu-example.txt"
+options = { temperature = 0.3 }
+
+[variants.hu-example-nothink]
+description = "Same as hu-example, thinking turned off"
+system_file = "prompts/hu-example.txt"
+options = { temperature = 0.3 }
+think = false
+
+# ---------------------------------------------------------------------------
+# Automatic checks. They only flag suspicious answers; style still needs a
+# human reader (answers.md).
+
+[checks]
+# Hunspell dictionary for the spelling check; skipped if it isn't installed.
+dictionary = "hu_HU"
+# Words Hunspell doesn't know but that are fine here (names, brands).
+ignore_words = []
+# Known mistakes from manual review, matched case-insensitively. Hunspell
+# can't catch these: the words exist, only the usage is wrong.
+avoid = [
+  "késedelméé",               # "késedelmééről" is a valid but meaningless word form
+  "rendelése kiszállítás",    # correct: "rendelésének kiszállítása"
+  "megírt határidő",          # meant: "megígért határidő"
+  "esetleges kellemetlenség", # the delay did happen, nothing "esetleges" about it
+  "fog megtörténni",          # calque of "will happen"
+  "meg fog történni",
+]
+# Share of the answer's n-word sequences found verbatim in the system prompt.
+copy_ngram = 6
+
+# ---------------------------------------------------------------------------
+# Test cases. "require" lists facts the answer must contain; "a|b" accepts
+# either form. Matching is case-insensitive and works on word stems too.
+
+[[cases]]
+id = "delay-letter"
+prompt = "Írj egy rövid, hivatalos levelet egy ügyfélnek egy késedelmes szállításról"
+
+[[cases]]
+id = "complaint-reply"
+prompt = """
+Egy ügyfelünk panaszt tett, mert a webshopunkban rendelt kávéfőző sérülten érkezett meg: megrepedt a víztartálya. \
+Írj neki egy udvarias, hivatalos választ! Kérjünk bocsánatot, és ajánljuk fel, hogy a terméket díjmentesen \
+kicseréljük, vagy visszatérítjük a vételárat.
+"""
+require = ["bocsánat|elnézés", "cser", "visszatérít|visszafizet|visszautal"]
+
+[[cases]]
+id = "meeting-invite"
+prompt = """
+Írj egy rövid, barátságos e-mailt a kollégáknak, amelyben meghívod őket a jövő csütörtöki negyedéves értekezletre. \
+Az értekezlet 10 órakor kezdődik a nagy tárgyalóban, és körülbelül egy óráig tart. Tegeződj!
+"""
+require = ["csütörtök", "10", "tárgyaló"]
+
+[[cases]]
+id = "gdpr-explain"
+prompt = "Magyarázd el egyszerűen, legfeljebb hat mondatban, mit jelent a GDPR egy tízfős kisvállalkozás számára!"
+require = ["személyes adat"]
+
+[[cases]]
+id = "summary"
+prompt = """
+Foglald össze három rövid pontban az alábbi belső közleményt!
+
+Kedves Kollégák! Az elmúlt hónapban két alkalommal is érkezett a céges postafiókokba olyan adathalász e-mail, \
+amely a rendszergazda nevében kérte a jelszavak megadását. Szeretnénk mindenkit emlékeztetni, hogy jelszót soha, \
+semmilyen formában nem kérünk e-mailben vagy telefonon. Gyanús levél esetén ne kattintsatok a benne lévő \
+hivatkozásokra, hanem továbbítsátok a levelet az informatikai csoportnak az it@pelda.hu címre. Január 15-től \
+minden munkatárs számára kötelező lesz a kétlépcsős azonosítás a levelezőrendszerben, a beállításhoz pedig \
+a jövő héten részletes útmutatót küldünk. Akinek ehhez segítségre van szüksége, kedden és csütörtökön 14 és \
+16 óra között személyesen is felkeresheti az informatikai csoportot a második emeleti irodában.
+"""
+require = ["jelsz", "kétlépcsős|kétfaktoros|kétlépéses", "január 15"]
+
+[[cases]]
+id = "translation"
+prompt = """
+Fordítsd le természetes, hivatalos magyar nyelvre az alábbi e-mailt!
+
+Dear Mr. Kovács,
+
+Thank you for your order. Unfortunately, the item you ordered is temporarily out of stock. We expect new stock \
+to arrive by 14 November, and we will ship your order immediately after that. If you would prefer not to wait, \
+we can cancel the order and refund the full amount within three business days.
+
+We apologise for the inconvenience.
+
+Kind regards,
+Anna Szabó
+Customer Service
+"""
+require = ["Kovács", "november 14", "három munkanap|3 munkanap"]
