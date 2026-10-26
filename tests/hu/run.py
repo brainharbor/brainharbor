@@ -40,7 +40,7 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 ORDERS = ("grouped", "interleaved", "shuffle")
 METRICS = ("total_duration", "load_duration", "prompt_eval_count", "prompt_eval_duration",
-           "eval_count", "eval_duration")
+           "eval_count", "eval_duration", "done_reason")
 
 THINK_RE = re.compile(r"<think>.*?</think>", re.S)
 PLACEHOLDER_RE = re.compile(r"\[[^\]\n]{1,80}\]")
@@ -238,8 +238,14 @@ class Checker:
         }
 
 
-def problem_count(found):
-    return sum(len(found[key] or []) for key in ("spelling", "foreign", "known", "missing"))
+def cut_off(record):
+    """No answer at all, or generation stopped by the length limit (e.g. thinking that never ended)."""
+    return not THINK_RE.sub("", record["content"]).strip() or record["metrics"].get("done_reason") == "length"
+
+
+def problem_count(record):
+    found = record["found"]
+    return cut_off(record) + sum(len(found[key] or []) for key in ("spelling", "foreign", "known", "missing"))
 
 
 # ---------------------------------------------------------------------------
@@ -281,9 +287,14 @@ def load_results(out_dir):
     return records
 
 
-def write_report(out_dir, checker):
+def write_report(out_dir, checker, current_cases):
     meta = json.loads((out_dir / "meta.json").read_text(encoding="utf-8"))
     cases, variants = meta["suite"]["cases"], meta["suite"]["variants"]
+    # Prompts are what was sent; the checks come from the current suite file.
+    for case_id, case in cases.items():
+        for key in ("require", "avoid"):
+            if case_id in current_cases:
+                case[key] = current_cases[case_id].get(key, [])
     records = load_results(out_dir)
     for r in records:
         if "error" not in r:
@@ -320,6 +331,7 @@ def write_report(out_dir, checker):
             sum(len(f["foreign"]) for f in found),
             sum(len(f["known"]) for f in found),
             sum(len(f["missing"]) for f in found),
+            sum(cut_off(r) for r in ok),
             fmt(max(copied) * 100 if copied else None, 0, "%"),
             len(rs) - len(ok),
         ])
@@ -330,7 +342,7 @@ def write_report(out_dir, checker):
         row = [f"{model} · {variant}"]
         for case_id in case_ids:
             ok = [r for r in groups[(model, variant)] if r["case"] == case_id and "error" not in r]
-            row.append(fmt(sum(problem_count(r["found"]) for r in ok) / len(ok), 1) if ok else "–")
+            row.append(fmt(sum(problem_count(r) for r in ok) / len(ok), 1) if ok else "–")
         case_rows.append(row)
 
     words, word_models = Counter(), defaultdict(set)
@@ -353,17 +365,19 @@ def write_report(out_dir, checker):
             f"- Spelling check: {spelling_note}",
         ]),
         "Variants:\n" + "\n".join(variant_lines),
-        "## Speed\n\nMedians over all answers. Response time excludes model loading; "
-        "GPU is the share of the model in VRAM.\n\n" + table(
+        "## Speed\n\nMedians over all answers. Response time excludes model loading. "
+        "GPU is the share of the model in VRAM as Ollama reports it; it looks too high "
+        "when part of a model runs on the CPU.\n\n" + table(
             ["Model", "Variant", "Answers", "Gen tok/s", "Prompt tok/s", "Prompt tokens",
              "Output tokens", "Response s", "Load s", "GPU"], speed_rows),
         "## Automatic checks\n\nSpelling: words Hunspell doesn't know. Foreign: letters "
         "from other scripts, or õ/û. Known: mistakes listed under [checks] avoid. Missing: "
-        "required facts not in the answer. Copied: largest share of an answer taken "
+        "required facts not in the answer. Cut off: empty answers, or answers stopped by the "
+        "length limit (usually endless thinking). Copied: largest share of an answer taken "
         "verbatim from the system prompt.\n\n" + table(
             ["Model", "Variant", "Answers", "Spelling / answer", "Foreign", "Known", "Missing",
-             "Copied", "Failed"], quality_rows),
-        "## Problems per answer, by case\n\nSum of the four checks above, averaged over runs.\n\n"
+             "Cut off", "Copied", "Failed"], quality_rows),
+        "## Problems per answer, by case\n\nSum of the checks above, averaged over runs.\n\n"
         + table(["Model · variant"] + case_ids, case_rows) if case_ids else "",
         "## Words flagged by the spelling check\n\nReal mistakes, names, or words to add to "
         "ignore_words.\n\n" + table(["Word", "Count", "Models"], word_rows) if word_rows else "",
@@ -388,6 +402,8 @@ def write_report(out_dir, checker):
                                    ("known", "known"), ("missing", "missing")):
                     if f[key]:
                         notes.append(f"{label}: " + ", ".join(dict.fromkeys(f[key])))
+                if cut_off(r):
+                    notes.append(f"CUT OFF ({m.get('done_reason') or 'empty'})")
                 if f["copied"]:
                     notes.append(f"copied: {f['copied'] * 100:.0f}%")
                 parts.append(f"{head}\n\n{' · '.join(notes)}\n\n{quote(THINK_RE.sub('', r['content']))}")
@@ -425,7 +441,7 @@ def parse_args():
     parser.add_argument("--dry-run", action="store_true", help="check the setup and print the plan only")
     parser.add_argument("--report", type=Path, metavar="DIR",
                         help="only rebuild summary.md and answers.md of an earlier run, "
-                             "with the current [checks] of the suite file")
+                             "with the checks of the current suite file")
     return parser.parse_args()
 
 
@@ -434,7 +450,7 @@ def main():
     suite = load_suite(args.suite)
     checker = Checker(suite["checks"])
     if args.report:
-        print(write_report(args.report, checker))
+        print(write_report(args.report, checker, suite["cases"]))
         return
 
     defaults = suite["run"]
@@ -514,11 +530,12 @@ def main():
                 print(f"{fmt(rate(m['eval_count'], m['eval_duration']))} tok/s, {record['wall_s']:.1f} s, "
                       f"spelling {fmt(len(f['spelling']) if f['spelling'] is not None else None)}, "
                       f"foreign {len(f['foreign'])}, known {len(f['known'])}, missing {len(f['missing'])}"
+                      + ("  CUT OFF" if cut_off(record) else "")
                       + (f"  (about {left} min left)" if left else ""))
     except KeyboardInterrupt:
         print("\nInterrupted; writing the report for the finished requests.")
 
-    print("\n" + write_report(out_dir, checker))
+    print("\n" + write_report(out_dir, checker, suite["cases"]))
     print(f"Results: {out_dir}")
 
 

@@ -5,7 +5,7 @@
 [run]
 # Empty means CHAT_MODELS from .env.
 models = []
-variants = ["hu-example"]
+variants = ["hu-v3-nothink"]
 runs = 3
 # grouped: model by model, fewest model loads (best on a single GPU)
 # interleaved: models take turns on every request (slow if they don't fit in memory together)
@@ -35,6 +35,67 @@ system_file = "prompts/hu-example.txt"
 options = { temperature = 0.3 }
 think = false
 
+# hu-example made every answer a formal letter with short, choppy sentences
+# and avoided "GDPR" as a foreign word (first real run, 2026-10-26).
+[variants.hu-v2]
+description = "Letter format only when asked, established terms allowed, temperature 0.3"
+system_file = "prompts/hu-v2.txt"
+options = { temperature = 0.3 }
+
+[variants.hu-v2-nothink]
+description = "Same as hu-v2, thinking turned off"
+system_file = "prompts/hu-v2.txt"
+options = { temperature = 0.3 }
+think = false
+
+# hu-v2 read more naturally but made more mistakes than hu-example: longer
+# sentences, and foreign words slipped in ("aussitôt", "şirket"). hu-v3 brings
+# back "short, simple sentences" and the strict "only Hungarian" rule.
+[variants.hu-v3]
+description = "hu-v2 plus short sentences and the strict only-Hungarian rule, temperature 0.3"
+system_file = "prompts/hu-v3.txt"
+options = { temperature = 0.3 }
+
+[variants.hu-v3-nothink]
+description = "Same as hu-v3, thinking turned off"
+system_file = "prompts/hu-v3.txt"
+options = { temperature = 0.3 }
+think = false
+
+# hu-v3 fixed the letter format, but two mistakes stayed in both 26b models:
+# "Kbuk"/"Kbán" (a mangled "kb.") in 5 of 12 meeting invites, and
+# "késedelmééről" in every q4 delay letter, built on the example's subject
+# line. hu-v4 bans other abbreviations and uses a plainer subject line.
+[variants.hu-v4]
+description = "hu-v3 without abbreviations and with a plainer example subject, temperature 0.3"
+system_file = "prompts/hu-v4.txt"
+options = { temperature = 0.3 }
+
+[variants.hu-v4-nothink]
+description = "Same as hu-v4, thinking turned off"
+system_file = "prompts/hu-v4.txt"
+options = { temperature = 0.3 }
+think = false
+
+# hu-v4 fixed both, but the plainer subject line broke into English
+# ("Kés delayed szállítási tájékoztató", 2 of 3), and the summaries went back
+# to formal address with broken imperatives ("kattintsonak"). hu-v5 keeps the
+# hu-v3 example and adds only the abbreviation rule.
+[variants.hu-v5]
+description = "hu-v3 plus the no-abbreviation rule, temperature 0.3"
+system_file = "prompts/hu-v5.txt"
+options = { temperature = 0.3 }
+
+[variants.hu-v5-nothink]
+description = "Same as hu-v5, thinking turned off"
+system_file = "prompts/hu-v5.txt"
+options = { temperature = 0.3 }
+think = false
+
+# hu-v5 fixed "kb." as well, but it got dates wrong in translations
+# ("november 14. napja körül", "novemberét kilencedik napja"), and the delay
+# letter mixed in English and Japanese. hu-v3 stays the default (2026-10-26).
+
 # ---------------------------------------------------------------------------
 # Automatic checks. They only flag suspicious answers; style still needs a
 # human reader (answers.md).
@@ -53,6 +114,12 @@ avoid = [
   "esetleges kellemetlenség", # the delay did happen, nothing "esetleges" about it
   "fog megtörténni",          # calque of "will happen"
   "meg fog történni",
+  "késedelmesít",             # "késedelmesítéséről": made-up derivation
+  "sajnálatunk, hogy",        # correct: "sajnáljuk, hogy"
+  "ki kell végez",            # "kivégez" means to execute someone; meant: "el kell végezni"
+  "elnézzük a kellemetlenség", # "we forgive the inconvenience"; meant: "elnézést kérünk"
+  "jelezze választ",          # correct: "jelezze, melyiket választja"
+  "ne kattintanak",           # correct imperative: "ne kattintsanak"
 ]
 # Share of the answer's n-word sequences found verbatim in the system prompt.
 copy_ngram = 6
@@ -72,7 +139,7 @@ Egy ügyfelünk panaszt tett, mert a webshopunkban rendelt kávéfőző sérült
 Írj neki egy udvarias, hivatalos választ! Kérjünk bocsánatot, és ajánljuk fel, hogy a terméket díjmentesen \
 kicseréljük, vagy visszatérítjük a vételárat.
 """
-require = ["bocsánat|elnézés", "cser", "visszatérít|visszafizet|visszautal"]
+require = ["bocsánat|elnézés", "cser", "visszatérít|visszafizet|visszautal|térítjük vissza|fizetjük vissza|utaljuk vissza"]
 
 [[cases]]
 id = "meeting-invite"
@@ -81,6 +148,7 @@ prompt = """
 Az értekezlet 10 órakor kezdődik a nagy tárgyalóban, és körülbelül egy óráig tart. Tegeződj!
 """
 require = ["csütörtök", "10", "tárgyaló"]
+avoid = ["értekezés"]           # a treatise, not a meeting ("értekezlet")
 
 [[cases]]
 id = "gdpr-explain"
@@ -119,4 +187,5 @@ Kind regards,
 Anna Szabó
 Customer Service
 """
-require = ["Kovács", "november 14", "három munkanap|3 munkanap"]
+# "visszautasítjuk" (we refuse) instead of "visszatérítjük" (we refund) is a meaning error.
+require = ["Kovács", "november 14", "három munkanap|3 munkanap", "visszatérít|visszautal|visszafizet|térítjük vissza|utaljuk vissza|fizetjük vissza"]

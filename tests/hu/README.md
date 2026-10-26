@@ -85,8 +85,8 @@ The automatic checks:
 | Copied | answers lifted from the style example | |
 
 They don't judge style or meaning: read `answers.md`. When you find a new
-recurring mistake, add it to `avoid`, then rebuild an earlier report with
-the new list:
+recurring mistake, add it to `avoid`, then rebuild an earlier report. The
+known mistakes and required facts come from the current suite file:
 
 ```sh
 python3 tests/hu/run.py --report tests/hu/results/20261026-201500
