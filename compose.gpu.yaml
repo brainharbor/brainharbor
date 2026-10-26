@@ -1,0 +1,13 @@
+# NVIDIA GPU override for Ollama.
+# Requires the NVIDIA driver and the NVIDIA Container Toolkit on the host;
+# scripts/preflight.sh checks both.
+
+services:
+  ollama:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

@@ -1,0 +1,17 @@
+# DOMAIN and CADDY_TLS come from .env via compose.yaml.
+# CADDY_TLS=internal  -> certificate from Caddy's local CA (LAN, no public DNS needed)
+# CADDY_TLS=you@x.com -> public certificate from Let's Encrypt (needs public DNS + port 80/443)
+
+{$DOMAIN} {
+	tls {$CADDY_TLS}
+
+	encode zstd gzip
+
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy no-referrer
+		-Server
+	}
+
+	reverse_proxy open-webui:8080
+}

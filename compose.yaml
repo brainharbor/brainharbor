@@ -1,0 +1,65 @@
+# brAInharbor: a private, self-hosted AI assistant.
+# Ollama runs the models, Open WebUI is the chat and document interface,
+# Caddy terminates HTTPS. Only Caddy publishes ports on the host.
+#
+# GPU support lives in compose.gpu.yaml; enable it with
+# COMPOSE_FILE=compose.yaml:compose.gpu.yaml in .env.
+
+name: brainharbor
+
+services:
+  ollama:
+    image: ollama/ollama:${OLLAMA_VERSION:-0.40.9}
+    restart: unless-stopped
+    volumes:
+      - ${MODELS_DIR:-./data/models}:/root/.ollama
+    environment:
+      OLLAMA_KEEP_ALIVE: ${OLLAMA_KEEP_ALIVE:-30m}
+      OLLAMA_CONTEXT_LENGTH: ${OLLAMA_CONTEXT_LENGTH:-8192}
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:${OPEN_WEBUI_VERSION:-v0.12.4}
+    restart: unless-stopped
+    depends_on:
+      ollama:
+        condition: service_healthy
+    volumes:
+      - ${WEBUI_DATA_DIR:-./data/webui}:/app/backend/data
+    environment:
+      OLLAMA_BASE_URL: http://ollama:11434
+      WEBUI_SECRET_KEY: ${WEBUI_SECRET_KEY:?Set WEBUI_SECRET_KEY in .env (openssl rand -hex 32)}
+      WEBUI_URL: https://${DOMAIN:?Set DOMAIN in .env}
+      # New sign-ups wait for admin approval; the first account becomes admin.
+      DEFAULT_USER_ROLE: pending
+      # Keep everything local: no external OpenAI-compatible endpoints by default.
+      ENABLE_OPENAI_API: "false"
+      # Document search (RAG) embeddings are computed by Ollama as well.
+      RAG_EMBEDDING_ENGINE: ollama
+      RAG_EMBEDDING_MODEL: ${EMBEDDING_MODEL:-bge-m3}
+
+  caddy:
+    image: caddy:${CADDY_VERSION:-2.11.7}
+    restart: unless-stopped
+    depends_on:
+      - open-webui
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+      - "${HTTPS_PORT:-443}:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN:?Set DOMAIN in .env}
+      # "internal" = Caddy's own CA (LAN use); an email address = Let's Encrypt.
+      CADDY_TLS: ${CADDY_TLS:-internal}
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ${CADDY_DATA_DIR:-./data/caddy}:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_config:

@@ -1,0 +1,8 @@
+# Local configuration and secrets
+.env
+
+# Runtime data (models, databases, certificates)
+data/
+
+# Exported certificates
+*.crt
