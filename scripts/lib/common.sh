@@ -39,3 +39,27 @@ data_dir() {
 compose() {
   (cd "$BH_ROOT" && docker compose "$@")
 }
+
+# service_running NAME: true if the compose service NAME is running.
+service_running() {
+  local running
+  running="$(compose ps --status running --services 2>/dev/null || true)"
+  [[ $'\n'$running$'\n' == *$'\n'"$1"$'\n'* ]]
+}
+
+have() { command -v "$1" >/dev/null 2>&1; }
+
+step() { printf '%s%s%s\n' "$C_BOLD" "$*" "$C_RESET"; }
+warn() { printf '%sWarning:%s %s\n' "$C_YELLOW" "$C_RESET" "$*" >&2; }
+die()  { printf '%sError:%s %s\n' "$C_RED" "$C_RESET" "$*" >&2; exit 1; }
+
+# zfs_dataset DIR
+# Prints the ZFS dataset that holds DIR, and the dataset's mount point on a
+# second line. Fails when DIR is not on ZFS.
+zfs_dataset() {
+  if ! have zfs || [[ "$(findmnt -n -o FSTYPE --target "$1" 2>/dev/null)" != zfs ]]; then
+    return 1
+  fi
+  findmnt -n -o SOURCE --target "$1"
+  findmnt -n -o TARGET --target "$1"
+}

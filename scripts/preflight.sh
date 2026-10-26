@@ -29,8 +29,6 @@ fail()    { printf '  %sFAIL%s  %s\n' "$C_RED" "$C_RESET" "$*"; FAILS=$((FAILS +
 info()    { printf '        %s\n' "$*"; }
 section() { printf '\n%s%s%s\n' "$C_BOLD" "$*" "$C_RESET"; }
 
-have() { command -v "$1" >/dev/null 2>&1; }
-
 # ---------------------------------------------------------------------------
 section "System"
 

@@ -15,7 +15,7 @@ sending anything to a cloud service.
 | [Caddy](https://caddyserver.com) | HTTPS in front of everything; the only service exposed on the host |
 | `ollama/` | `brainharbor-hu`: gemma4:26b with the Hungarian system prompt and settings that tested best |
 | `open-webui/` | Open WebUI defaults: default model, thinking off, Hungarian system prompt |
-| `scripts/` | Pre-flight checks, model downloads, and (soon) backup and restore |
+| `scripts/` | Pre-flight checks, model downloads, backup and restore |
 | `tests/hu/` | Hungarian language tests: same questions to every model, mistakes counted |
 
 Versions are pinned in `.env.example` and only changed together with a test run.
@@ -68,7 +68,10 @@ slower. It still makes some: have a person read what goes out.
 - `ollama/brainharbor-hu.Modelfile` holds the model, the system prompt and
   the temperature. `scripts/pull-models.sh` builds it.
 - `open-webui/defaults.env` makes it the default model, turns thinking off
-  and sets the same system prompt in Open WebUI.
+  and sets the same system prompt in Open WebUI. It also switches Open
+  WebUI to legacy function calling: in its default (native) mode, the
+  descriptions of Open WebUI's built-in tools add about 6000 tokens to
+  every message, and the answer starts seconds later.
 
 ## Storage
 
@@ -76,6 +79,17 @@ All data lives in `data/` next to `compose.yaml`: models, Open WebUI's
 database and uploads, and Caddy's certificates. On ZFS, see
 [docs/zfs.md](docs/zfs.md) for a dataset layout with suitable settings,
 and how to move an existing install onto it.
+
+## Backups
+
+```sh
+sudo scripts/backup.sh                 # one archive in backups/: data, certificates, .env
+sudo scripts/restore.sh backups/brainharbor-YYYYMMDD-HHMMSS.tar.gz
+```
+
+The archive holds everything except the models, which are downloaded
+again on restore. Nightly runs, offsite copies, ZFS snapshots and moving to
+a new machine: [docs/backup.md](docs/backup.md).
 
 ## Good to know
 

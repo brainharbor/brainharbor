@@ -87,9 +87,10 @@ setup. The copies are written with the new datasets' `recordsize` and
 
 ## Snapshots and backups
 
-Coming with `scripts/backup.sh`: scheduled snapshots of `webui`, `caddy`
-and the repository dataset, and copies to a second machine. Until then,
-take a snapshot before upgrades:
+`scripts/backup.sh` notices these datasets and copies from a snapshot, so
+Open WebUI keeps running during backups. Scheduled snapshots with sanoid
+and copies to a second ZFS machine are in [backup.md](backup.md#zfs-snapshots).
+Before an upgrade, a manual snapshot is a quick way back:
 
 ```sh
 sudo zfs snapshot -r "$POOL/brainharbor@before-upgrade"

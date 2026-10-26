@@ -10,11 +10,7 @@ set -euo pipefail
 # shellcheck source-path=SCRIPTDIR source=lib/common.sh
 source "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
 
-running="$(compose ps --status running --services 2>/dev/null || true)"
-if [[ $'\n'$running$'\n' != *$'\n'ollama$'\n'* ]]; then
-  echo "Ollama is not running. Start the stack first: docker compose up -d" >&2
-  exit 1
-fi
+service_running ollama || die "Ollama is not running. Start the stack first: docker compose up -d"
 
 read -r -a models <<<"$(env_get CHAT_MODELS gemma4:26b) $(env_get EMBEDDING_MODEL bge-m3)"
 

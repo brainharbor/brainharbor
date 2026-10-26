@@ -1,8 +1,11 @@
-# Local configuration and secrets
+# Local configuration and secrets (restore.sh keeps old copies as .env.*)
 .env
+.env.*
+!.env.example
 
-# Runtime data (models, databases, certificates)
+# Runtime data (models, databases, certificates) and backups
 data/
+backups/
 
 # Exported certificates
 *.crt
