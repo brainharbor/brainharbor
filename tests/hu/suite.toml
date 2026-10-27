@@ -118,8 +118,12 @@ think = false
 [checks]
 # Hunspell dictionary for the spelling check; skipped if it isn't installed.
 dictionary = "hu_HU"
-# Words Hunspell doesn't know but that are fine here (names, brands).
-ignore_words = []
+# Words Hunspell doesn't know but that are fine here (names, brands). An entry
+# also covers the word with suffixes: "Zöldkert" covers "Zöldkerttől".
+ignore_words = [
+  "HR-",       # HR-portálon, HR-t, HR-nek (documents/tavmunka-szabalyzat.txt)
+  "Zöldkert",  # company name in the extract case
+]
 # Known mistakes from manual review, matched case-insensitively. Hunspell
 # can't catch these: the words exist, only the usage is wrong.
 avoid = [
@@ -204,3 +208,99 @@ Customer Service
 """
 # "visszautasítjuk" (we refuse) instead of "visszatérítjük" (we refund) is a meaning error.
 require = ["Kovács", "november 14", "három munkanap|3 munkanap", "visszatérít|visszautal|visszafizet|térítjük vissza|utaljuk vissza|fizetjük vissza"]
+
+# ---------------------------------------------------------------------------
+# Deeper cases, added for the qwen3.5:35b-a3b vs gemma4:26b comparison
+# (2026-10-27). In the first candidate run qwen made up details ("jövő
+# hétfőn", order number "12345"), so these give concrete facts and count new
+# numbers. The doc-* cases send a one-page policy document (documents/) to
+# measure long-prompt speed and answers that stick to the document.
+
+[[cases]]
+id = "delay-letter-facts"
+prompt = """
+Írj rövid, hivatalos levelet Nagy Évának! A HU-2026-0457 számú rendelése a beszállító késése miatt nem október \
+30-án, hanem november 21-én érkezik. Kérjünk elnézést, és ajánljunk fel ingyenes szállítást a következő rendeléséhez.
+"""
+require = ["Nagy Év", "HU-2026-0457", "november 21", "ingyenes szállítás|díjmentes szállítás|ingyen szállít|díjmentesen szállít", "elnézés|bocsánat"]
+check_numbers = true
+
+[[cases]]
+id = "doc-qa-answer"
+document_file = "documents/tavmunka-szabalyzat.txt"
+prompt = """
+Az alábbi belső szabályzat alapján válaszolj a kérdésre. Ha a válasz nem szerepel a szabályzatban, írd meg, hogy \
+a szabályzat nem tartalmazza.
+
+{document}
+
+Kérdés: Mekkora támogatást kaphatok otthoni munkaeszközökre, mire költhetem, és hogyan igényelhetem?
+"""
+require = ["40 000|40000|40 ezer|negyvenezer", "száml", "HR-portál|HR portál", "30 nap"]
+check_numbers = true
+
+# The policy names no data protection officer: the right answer says so.
+[[cases]]
+id = "doc-qa-unknown"
+document_file = "documents/tavmunka-szabalyzat.txt"
+prompt = """
+Az alábbi belső szabályzat alapján válaszolj a kérdésre. Ha a válasz nem szerepel a szabályzatban, írd meg, hogy \
+a szabályzat nem tartalmazza.
+
+{document}
+
+Kérdés: Ki a cég adatvédelmi tisztviselője, és milyen elérhetőségen kereshetem meg?
+"""
+require = ["nem szerepel|nem tartalmaz|nem derül ki|nem található|nem nevez|nincs benne|nem említ|nem tér ki|nem ad meg|nincs megadva|nincs információ|nincs adat"]
+check_numbers = true
+
+[[cases]]
+id = "doc-summary"
+document_file = "documents/tavmunka-szabalyzat.txt"
+prompt = """
+Foglald össze az alábbi szabályzatot legfeljebb öt rövid pontban egy új munkatársnak! Tegeződj!
+
+{document}
+"""
+require = ["két nap|2 nap", "VPN"]
+check_numbers = true
+
+# Four planted mistakes. "egyenlőre" is a real word (equally), so only the
+# avoid list catches it; Hunspell flags the other three too.
+[[cases]]
+id = "proofread"
+prompt = """
+Javítsd ki a helyesírási és nyelvtani hibákat az alábbi szövegben! Csak a javított szöveget írd le, magyarázat nélkül.
+
+Kedves Ügyfeleink! Értesítjük Önöket, hogy webáruházunk november 7-én 22 órától karbantartás miatt néhány órára \
+nem lessz elérhető. A közben beérkező leveleket a karbantartás után feldolgozuk, a hibásan rögzített rendelésekett \
+pedig kijavítjuk. Az utánvétes fizetés egyenlőre szünetel. Köszönjük a türelmüket, és elnézést kérünk a kellemetlenségért!
+"""
+require = ["november 7", "22"]
+avoid = ["lessz", "feldolgozuk", "rendelésekett", "egyenlőre"]
+check_numbers = true
+
+# The letter has no phone number: the right answer says "nincs megadva".
+[[cases]]
+id = "extract"
+prompt = """
+Szedd pontokba az alábbi levélből: a megrendelő neve, a cég neve, a termék, a mennyiség, a szállítási cím, \
+a telefonszám és a kért határidő. Ha valamelyik adat hiányzik, írd mellé, hogy „nincs megadva”.
+
+Jó napot kívánok! Kovács Péter vagyok a Zöldkert Bt.-től. Szeretnénk rendelni 12 darab 50 literes virágföldet, \
+és ha lehet, a jövő hét péntekig szállítsák ki a 8000 Székesfehérvár, Kertész utca 14. címre. Számlát a cég \
+nevére kérünk. Köszönöm!
+"""
+require = ["Kovács Péter", "Zöldkert", "virágföld", "12", "Székesfehérvár", "Kertész utca 14", "péntek", "nincs megadva"]
+check_numbers = true
+
+# 10% of 450 000 Ft is 45 000 Ft, leaving 405 000 Ft: correct if mentioned.
+[[cases]]
+id = "discount-reply"
+prompt = """
+Egy visszatérő ügyfelünk, Tóth Gábor 30% kedvezményt kért egy 450 000 Ft-os irodabútor-rendelésre. Legfeljebb \
+10% kedvezményt tudunk adni, és csak akkor, ha november 30-ig megrendeli. Írj neki rövid, udvarias, hivatalos választ!
+"""
+require = ["Tóth", "10", "november 30"]
+check_numbers = true
+allow_numbers = [45000, 405000]

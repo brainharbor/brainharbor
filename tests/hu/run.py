@@ -46,6 +46,9 @@ THINK_RE = re.compile(r"<think>.*?</think>", re.S)
 PLACEHOLDER_RE = re.compile(r"\[[^\]\n]{1,80}\]")
 URL_RE = re.compile(r"https?://\S+|[\w.+-]+@[\w-]+\.[\w.-]+")
 HU_LETTERS = set("áéíóöőúüűÁÉÍÓÖŐÚÜŰ")
+LIST_NUMBER_RE = re.compile(r"^\s*\d{1,2}[.)]\s", re.M)  # not "2026. november" at a line start
+THOUSANDS_RE = re.compile(r"(?<=\d)[   .](?=\d{3}\b)")  # 40 000 or 40.000 -> 40000
+MINUTES_RE = re.compile(r"(?<![\d.])(\d{1,2})[:.]\d{2}\b(?!\.\d)")  # 9:00 or 9.00 -> 9, not 2026.11.21
 
 
 def env_get(key, default=""):
@@ -86,7 +89,15 @@ def load_suite(path):
     for case in suite.get("cases", []):
         if case["id"] in cases:
             sys.exit(f"Duplicate case id in {path}: {case['id']}")
-        case["prompt"] = case["prompt"].strip()
+        prompt = case["prompt"].strip()
+        if "document_file" in case:
+            if "{document}" not in prompt:
+                sys.exit(f"Case {case['id']} in {path}: document_file needs {{document}} in the prompt")
+            document = (path.parent / case["document_file"]).read_text(encoding="utf-8").strip()
+            # answers.md shows the file name instead of the whole document.
+            case["prompt_shown"] = prompt.replace("{document}", f"[{case['document_file']}]")
+            prompt = prompt.replace("{document}", document)
+        case["prompt"] = prompt
         cases[case["id"]] = case
     suite["cases"] = cases
     suite.setdefault("variants", {})
@@ -199,10 +210,18 @@ def shingles(text, n):
     return {tuple(words[i:i + n]) for i in range(len(words) - n + 1)}
 
 
+def numbers(text):
+    """Whole numbers in the text, apart from list numbering, minutes, placeholders, URLs and e-mail addresses."""
+    text = LIST_NUMBER_RE.sub(" ", URL_RE.sub(" ", PLACEHOLDER_RE.sub(" ", text)))
+    text = MINUTES_RE.sub(r"\1", THOUSANDS_RE.sub("", text))
+    return {int(n) for n in re.findall(r"\d+", text)}
+
+
 class Checker:
     def __init__(self, checks):
         self.dictionary = checks.get("dictionary", "hu_HU")
-        self.ignore = {word.casefold() for word in checks.get("ignore_words", [])}
+        # An entry also covers the word with suffixes: "Zöldkert" covers "Zöldkerttől".
+        self.ignore = tuple(word.casefold() for word in checks.get("ignore_words", []))
         self.avoid = checks.get("avoid", [])
         self.ngram = checks.get("copy_ngram", 6)
         self.hunspell = shutil.which("hunspell")
@@ -221,18 +240,23 @@ class Checker:
         words = (word.strip(".,;:!?()\"'„”»«…-") for word in self._hunspell(text) or [])
         return [word for word in words
                 if word and not word.isupper() and not any(c.isdigit() for c in word)
-                and word.casefold() not in self.ignore]
+                and not word.casefold().startswith(self.ignore)]
 
     def check(self, content, case, system):
         text = THINK_RE.sub("", content)
         lowered = text.casefold()
         answer = shingles(text, self.ngram)
+        new_numbers = None
+        if case.get("check_numbers"):
+            given = numbers(case["prompt"] + "\n" + system) | set(case.get("allow_numbers", []))
+            new_numbers = [str(n) for n in sorted(numbers(text) - given)]
         return {
             "spelling": self.spelling(text),
             "foreign": [ch for ch in text if is_foreign(ch)],
             "known": [p for p in self.avoid + case.get("avoid", []) if p.casefold() in lowered],
             "missing": [r for r in case.get("require", [])
                         if not any(alt.casefold() in lowered for alt in r.split("|"))],
+            "numbers": new_numbers,
             "copied": len(answer & shingles(system, self.ngram)) / len(answer)
             if answer and system else None,
         }
@@ -245,7 +269,8 @@ def cut_off(record):
 
 def problem_count(record):
     found = record["found"]
-    return cut_off(record) + sum(len(found[key] or []) for key in ("spelling", "foreign", "known", "missing"))
+    return cut_off(record) + sum(len(found[key] or [])
+                                 for key in ("spelling", "foreign", "known", "missing", "numbers"))
 
 
 # ---------------------------------------------------------------------------
@@ -292,9 +317,9 @@ def write_report(out_dir, checker, current_cases):
     cases, variants = meta["suite"]["cases"], meta["suite"]["variants"]
     # Prompts are what was sent; the checks come from the current suite file.
     for case_id, case in cases.items():
-        for key in ("require", "avoid"):
+        for key, default in (("require", []), ("avoid", []), ("check_numbers", False), ("allow_numbers", [])):
             if case_id in current_cases:
-                case[key] = current_cases[case_id].get(key, [])
+                case[key] = current_cases[case_id].get(key, default)
     records = load_results(out_dir)
     for r in records:
         if "error" not in r:
@@ -331,6 +356,7 @@ def write_report(out_dir, checker, current_cases):
             sum(len(f["foreign"]) for f in found),
             sum(len(f["known"]) for f in found),
             sum(len(f["missing"]) for f in found),
+            sum(len(f["numbers"] or []) for f in found),
             sum(cut_off(r) for r in ok),
             fmt(max(copied) * 100 if copied else None, 0, "%"),
             len(rs) - len(ok),
@@ -372,11 +398,13 @@ def write_report(out_dir, checker, current_cases):
              "Output tokens", "Response s", "Load s", "GPU"], speed_rows),
         "## Automatic checks\n\nSpelling: words Hunspell doesn't know. Foreign: letters "
         "from other scripts, or õ/û. Known: mistakes listed under [checks] avoid. Missing: "
-        "required facts not in the answer. Cut off: empty answers, or answers stopped by the "
-        "length limit (usually endless thinking). Copied: largest share of an answer taken "
-        "verbatim from the system prompt.\n\n" + table(
+        "required facts not in the answer. New numbers: numbers that aren't in the prompt, "
+        "in cases with check_numbers; usually invented dates, amounts or order numbers. Cut "
+        "off: empty answers, or answers stopped by the length limit (usually endless "
+        "thinking). Copied: largest share of an answer taken verbatim from the system "
+        "prompt.\n\n" + table(
             ["Model", "Variant", "Answers", "Spelling / answer", "Foreign", "Known", "Missing",
-             "Cut off", "Copied", "Failed"], quality_rows),
+             "New numbers", "Cut off", "Copied", "Failed"], quality_rows),
         "## Problems per answer, by case\n\nSum of the checks above, averaged over runs.\n\n"
         + table(["Model · variant"] + case_ids, case_rows) if case_ids else "",
         "## Words flagged by the spelling check\n\nReal mistakes, names, or words to add to "
@@ -387,7 +415,7 @@ def write_report(out_dir, checker, current_cases):
 
     parts = [f"# Answers, {meta['started'].replace('T', ' ')}"]
     for case_id in case_ids:
-        parts.append(f"## {case_id}\n\n" + quote(cases[case_id]["prompt"]))
+        parts.append(f"## {case_id}\n\n" + quote(cases[case_id].get("prompt_shown", cases[case_id]["prompt"])))
         for model, variant in keys:
             for r in sorted((r for r in groups[(model, variant)] if r["case"] == case_id),
                             key=lambda r: r["run"]):
@@ -399,7 +427,7 @@ def write_report(out_dir, checker, current_cases):
                 notes = [f"{fmt(rate(m['eval_count'], m['eval_duration']))} tok/s",
                          f"{r['wall_s']:.1f} s"]
                 for label, key in (("spelling", "spelling"), ("foreign", "foreign"),
-                                   ("known", "known"), ("missing", "missing")):
+                                   ("known", "known"), ("missing", "missing"), ("new numbers", "numbers")):
                     if f[key]:
                         notes.append(f"{label}: " + ", ".join(dict.fromkeys(f[key])))
                 if cut_off(r):
@@ -530,6 +558,7 @@ def main():
                 print(f"{fmt(rate(m['eval_count'], m['eval_duration']))} tok/s, {record['wall_s']:.1f} s, "
                       f"spelling {fmt(len(f['spelling']) if f['spelling'] is not None else None)}, "
                       f"foreign {len(f['foreign'])}, known {len(f['known'])}, missing {len(f['missing'])}"
+                      + (f", new numbers {len(f['numbers'])}" if f["numbers"] is not None else "")
                       + ("  CUT OFF" if cut_off(record) else "")
                       + (f"  (about {left} min left)" if left else ""))
     except KeyboardInterrupt:

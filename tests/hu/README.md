@@ -82,6 +82,7 @@ The automatic checks:
 | Foreign | Chinese and other scripts, õ/û instead of ő/ű | |
 | Known | mistakes found earlier, listed under `[checks] avoid` | new ones |
 | Missing | facts from the prompt left out (date, place, offer) | facts that are wrong |
+| New numbers | invented dates, amounts, order numbers (cases with `check_numbers`) | numbers written as words; correct calculations show up too unless listed in `allow_numbers` |
 | Copied | answers lifted from the style example | |
 
 They don't judge style or meaning: read `answers.md`. When you find a new
@@ -114,7 +115,18 @@ python3 tests/hu/run.py --models brainharbor-hu --variants modelfile,modelfile-1
 
 ## Adding cases and variants
 
-A case needs an `id` and a `prompt`; `require` is optional. A variant can
-set `system_file`, Ollama `options` (temperature, num_ctx, top_p, ...) and
-`think`. Keep case ids stable, so results from different days can be
-compared.
+A case needs an `id` and a `prompt`; the rest is optional:
+
+- `require`: facts the answer must contain; `"a|b"` accepts either form
+- `avoid`: known mistakes for this case only, on top of `[checks] avoid`
+- `check_numbers = true`: flag every number in the answer that isn't in the
+  prompt or the system prompt. List numbers, minutes ("9:00") and thousands
+  separators ("40 000") are handled; correct derived numbers, such as a
+  computed discount, go in `allow_numbers`.
+- `document_file`: a text file, relative to `suite.toml`, pasted into the
+  prompt where it says `{document}`. `answers.md` shows the file name
+  instead of the whole text.
+
+A variant can set `system_file`, Ollama `options` (temperature, num_ctx,
+top_p, ...) and `think`. Keep case ids stable, so results from different
+days can be compared.
