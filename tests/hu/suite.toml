@@ -139,6 +139,12 @@ avoid = [
   "elnézzük a kellemetlenség", # "we forgive the inconvenience"; meant: "elnézést kérünk"
   "jelezze választ",          # correct: "jelezze, melyiket választja"
   "ne kattintanak",           # correct imperative: "ne kattintsanak"
+  # qwen3.5:35b-a3b vs gemma4:26b, 2026-10-27
+  "vettük tudomására",        # meant: "tudomásul vettük"
+  "kérem, bocsánatot",        # "Kérem, bocsánatot kérünk": I ask, we apologise
+  "szívesen bocsánatot",      # apologising "gladly"
+  "felhívta figyelmét",       # meant: "felhívta a figyelmünket"
+  "jelszók",                  # the plural of "jelszó" is "jelszavak"
 ]
 # Share of the answer's n-word sequences found verbatim in the system prompt.
 copy_ngram = 6
@@ -150,6 +156,7 @@ copy_ngram = 6
 [[cases]]
 id = "delay-letter"
 prompt = "Írj egy rövid, hivatalos levelet egy ügyfélnek egy késedelmes szállításról"
+avoid = ["leggyakrabban"]      # "leggyakrabban [dátum]" (most often); meant: "legkorábban" (at the earliest)
 
 [[cases]]
 id = "complaint-reply"
@@ -167,7 +174,10 @@ prompt = """
 Az értekezlet 10 órakor kezdődik a nagy tárgyalóban, és körülbelül egy óráig tart. Tegeződj!
 """
 require = ["csütörtök", "10", "tárgyaló"]
-avoid = ["értekezés"]           # a treatise, not a meeting ("értekezlet")
+avoid = [
+  "értekezés",                # a treatise, not a meeting ("értekezlet")
+  "szia mindenkinek",         # meant: "Sziasztok!" or "Szia mindenki!"
+]
 
 [[cases]]
 id = "gdpr-explain"
@@ -223,6 +233,7 @@ prompt = """
 30-án, hanem november 21-én érkezik. Kérjünk elnézést, és ajánljunk fel ingyenes szállítást a következő rendeléséhez.
 """
 require = ["Nagy Év", "HU-2026-0457", "november 21", "ingyenes szállítás|díjmentes szállítás|ingyen szállít|díjmentesen szállít", "elnézés|bocsánat"]
+avoid = ["jövőbeni vásárlás"]  # free shipping on every future purchase, not just the next order
 check_numbers = true
 
 [[cases]]
@@ -262,8 +273,9 @@ Foglald össze az alábbi szabályzatot legfeljebb öt rövid pontban egy új mu
 
 {document}
 """
-require = ["két nap|2 nap", "VPN"]
+require = ["két nap|2 nap|két távmunkanap", "VPN"]
 check_numbers = true
+allow_numbers = [3]             # "délután 3-ig" for the 15:00 end of core hours
 
 # Four planted mistakes. "egyenlőre" is a real word (equally), so only the
 # avoid list catches it; Hunspell flags the other three too.
@@ -277,7 +289,8 @@ nem lessz elérhető. A közben beérkező leveleket a karbantartás után feldo
 pedig kijavítjuk. Az utánvétes fizetés egyenlőre szünetel. Köszönjük a türelmüket, és elnézést kérünk a kellemetlenségért!
 """
 require = ["november 7", "22"]
-avoid = ["lessz", "feldolgozuk", "rendelésekett", "egyenlőre"]
+# "egyidejűleg" (at the same time) for "egyenlőre" changes the meaning; meant: "egyelőre" (for now).
+avoid = ["lessz", "feldolgozuk", "rendelésekett", "egyenlőre", "egyidejűleg"]
 check_numbers = true
 
 # The letter has no phone number: the right answer says "nincs megadva".

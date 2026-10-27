@@ -48,6 +48,7 @@ URL_RE = re.compile(r"https?://\S+|[\w.+-]+@[\w-]+\.[\w.-]+")
 HU_LETTERS = set("áéíóöőúüűÁÉÍÓÖŐÚÜŰ")
 LIST_NUMBER_RE = re.compile(r"^\s*\d{1,2}[.)]\s", re.M)  # not "2026. november" at a line start
 THOUSANDS_RE = re.compile(r"(?<=\d)[   .](?=\d{3}\b)")  # 40 000 or 40.000 -> 40000
+THOUSAND_WORD_RE = re.compile(r"(\d+)\s*ezer", re.I)  # 40 ezer -> 40000
 MINUTES_RE = re.compile(r"(?<![\d.])(\d{1,2})[:.]\d{2}\b(?!\.\d)")  # 9:00 or 9.00 -> 9, not 2026.11.21
 
 
@@ -214,6 +215,7 @@ def numbers(text):
     """Whole numbers in the text, apart from list numbering, minutes, placeholders, URLs and e-mail addresses."""
     text = LIST_NUMBER_RE.sub(" ", URL_RE.sub(" ", PLACEHOLDER_RE.sub(" ", text)))
     text = MINUTES_RE.sub(r"\1", THOUSANDS_RE.sub("", text))
+    text = THOUSAND_WORD_RE.sub(lambda m: str(int(m.group(1)) * 1000), text)
     return {int(n) for n in re.findall(r"\d+", text)}
 
 
