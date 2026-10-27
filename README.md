@@ -27,7 +27,8 @@ Versions are pinned in `.env.example` and only changed together with a test run.
   about 20 GB of VRAM and RAM together
 - Optional but strongly recommended: an NVIDIA GPU with 8 GB+ VRAM,
   a recent driver (570+ for RTX 50-series) and the NVIDIA Container Toolkit
-- ~50 GB free disk for models
+- Free disk: about 20 GB for the container images (in Docker's folder,
+  usually on `/`) and about 50 GB for models
 
 ## Quick start
 
@@ -112,7 +113,7 @@ See [tests/hu/README.md](tests/hu/README.md).
 - [x] Pre-flight check script
 - [x] Hungarian language test suite
 - [x] ZFS-friendly data layout and documentation
-- [ ] Backup and restore scripts, tested on a clean machine
+- [x] Backup and restore scripts, tested on a clean machine
 - [ ] Hungarian and English documentation
 - [ ] CI: shellcheck, compose validation
 

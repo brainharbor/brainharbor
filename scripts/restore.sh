@@ -170,7 +170,7 @@ done
 # ---------------------------------------------------------------------------
 step "Starting brAInharbor"
 if ! compose up -d --wait --wait-timeout 600; then
-  die "The data is restored, but brAInharbor did not start. Check .env (COMPOSE_FILE without a GPU, ports), then: docker compose up -d && scripts/pull-models.sh"
+  die "The data is restored, but brAInharbor did not start; see the error above. Common causes: a full disk, a GPU in COMPOSE_FILE on a machine without one, ports in use. Fix it, then: docker compose up -d && scripts/pull-models.sh"
 fi
 
 if ((PULL_MODELS)); then

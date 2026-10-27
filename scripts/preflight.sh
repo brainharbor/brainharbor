@@ -206,6 +206,39 @@ check_dir "Models" MODELS_DIR ./data/models 50
 check_dir "Web UI data" WEBUI_DATA_DIR ./data/webui 10
 check_dir "Caddy data" CADDY_DATA_DIR ./data/caddy 1
 
+# Container images live in Docker's own folders, usually on /. Ollama and
+# Open WebUI take about 15 GiB together; a Debian VM with 13 GiB free ran out.
+if ((docker_ok)); then
+  missing=0
+  while read -r image; do
+    if [[ -n $image ]] && ! docker image inspect "$image" >/dev/null 2>&1; then
+      missing=$((missing + 1))
+    fi
+  done < <(compose config --images 2>/dev/null)
+
+  if ((missing == 0)); then
+    pass "Container images: already downloaded"
+  else
+    images_free=""
+    for dir in "$(docker info --format '{{.DockerRootDir}}' 2>/dev/null)" /var/lib/containerd; do
+      [[ -d $dir ]] || continue
+      free_gib=$(($(df -Pk "$dir" | awk 'NR==2 {print $4}') / 1024 / 1024))
+      if [[ -z $images_free ]] || ((free_gib < images_free)); then
+        images_free=$free_gib images_dir=$dir
+      fi
+    done
+    if [[ -z $images_free ]]; then
+      warn "Could not find Docker's image folder to check its free space (about 20 GiB needed)"
+    elif ((images_free >= 20)); then
+      pass "Container images: ${images_free} GiB free in ${images_dir}"
+    elif ((images_free >= 15)); then
+      warn "Container images: only ${images_free} GiB free in ${images_dir} (20+ recommended)"
+    else
+      fail "Container images: only ${images_free} GiB free in ${images_dir} (about 15 GiB needed)"
+    fi
+  fi
+fi
+
 # ---------------------------------------------------------------------------
 section "Network"
 
