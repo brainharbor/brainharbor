@@ -12,3 +12,7 @@ backups/
 
 # Hungarian test suite output
 tests/hu/results/
+
+# Python and tool caches
+__pycache__/
+.ruff_cache/

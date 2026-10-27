@@ -1,10 +1,14 @@
 # brAInharbor
 
+**English** · [Magyar](README.hu.md)
+
 A private AI assistant for small teams, running on your own hardware.
 Chat with local language models and search your own documents, without
 sending anything to a cloud service.
 
-> Status: **v0.1 in progress.** Expect breaking changes until the first tagged release.
+> Status: **v0.1.0**, the first release. Things may still change in
+> incompatible ways before 1.0; read the [changelog](CHANGELOG.md) before
+> upgrading.
 
 ## What's inside
 
@@ -107,16 +111,17 @@ Small local models make mistakes in Hungarian, and they differ a lot.
 speed, and flags spelling errors, foreign characters and known mistakes.
 See [tests/hu/README.md](tests/hu/README.md).
 
-## Roadmap to v0.1
+## Done for v0.1
 
 - [x] Compose stack with GPU support and HTTPS
 - [x] Pre-flight check script
 - [x] Hungarian language test suite
 - [x] ZFS-friendly data layout and documentation
 - [x] Backup and restore scripts, tested on a clean machine
-- [ ] Hungarian and English documentation
-- [ ] CI: shellcheck, compose validation
+- [x] README in Hungarian and English
+- [x] CI: shellcheck, compose validation, system prompt kept in sync
 
 ## License
 
-MIT, see [LICENSE](LICENSE). Bundled components keep their own licenses.
+MIT, see [LICENSE](LICENSE). Ollama, Open WebUI, Caddy and the models
+keep their own licenses.

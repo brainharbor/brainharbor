@@ -3,12 +3,13 @@
 #
 # Base model, system prompt and temperature won the Hungarian tests
 # (tests/hu, variant hu-v3-nothink, 2026-10-26). Keep SYSTEM identical to
-# tests/hu/prompts/hu-v3.txt and to the system prompt in compose.yaml.
+# tests/hu/prompts/hu-v3.txt and to the system prompt in
+# open-webui/defaults.env; tests/check_prompts.py checks it.
 #
 # Thinking can't be switched off in a Modelfile: Open WebUI sends
-# think=false instead (DEFAULT_MODEL_PARAMS in compose.yaml). Ollama uses
-# this SYSTEM only when a request brings no system message of its own, for
-# example Open WebUI's title and follow-up requests.
+# think=false instead (DEFAULT_MODEL_PARAMS in open-webui/defaults.env).
+# Ollama uses this SYSTEM only when a request brings no system message of
+# its own, for example Open WebUI's title and follow-up requests.
 
 FROM gemma4:26b
 PARAMETER temperature 0.3

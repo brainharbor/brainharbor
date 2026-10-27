@@ -1,0 +1,29 @@
+# Checks that need no GPU and no models: script lint, compose files, the
+# Hungarian system prompt being the same in every file, Python syntax.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Shell scripts (shellcheck)
+        run: shellcheck -x scripts/*.sh scripts/lib/common.sh
+
+      - name: Compose files
+        run: |
+          cp .env.example .env
+          docker compose config --quiet
+          COMPOSE_FILE=compose.yaml docker compose config --quiet
+          COMPOSE_FILE=compose.yaml:compose.gpu.yaml:compose.ollama-api.yaml docker compose config --quiet
+
+      - name: Hungarian system prompt in sync
+        run: python3 tests/check_prompts.py
+
+      - name: Python syntax
+        run: python3 -m py_compile tests/hu/run.py tests/check_prompts.py
