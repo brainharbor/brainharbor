@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased
+
+- **New default model:** `brainharbor-hu` is now built on qwen3.5:35b-a3b
+  instead of gemma4:26b. In a deeper Hungarian test (13 tasks, 208 answers)
+  it made fewer mistakes and answered faster. It is a 22 GB download, tested
+  with a 12 GB GPU and 32 GB of RAM.
+  - Existing installs switch on the next `scripts/pull-models.sh`, which
+    downloads it.
+  - To keep gemma4:26b, or on a machine with less memory, set
+    `HU_BASE_MODEL=gemma4:26b` and `CHAT_MODELS=gemma4:26b` in `.env`, then
+    run `scripts/pull-models.sh`.
+  - `scripts/preflight.sh` now recommends 32 GB of RAM for the default model.
+- **`tests/hu`:** seven new cases (proofreading, data extraction, questions
+  about a policy document, a discount reply), a check for numbers that aren't
+  in the prompt, and long documents in prompts (`document_file`).
+
 ## v0.1.0 (2026-10-27)
 
 First release: a private AI assistant for a small team on one Linux

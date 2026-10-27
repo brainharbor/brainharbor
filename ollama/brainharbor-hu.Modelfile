@@ -1,8 +1,13 @@
 # brAInharbor Hungarian assistant. scripts/pull-models.sh creates it as
 # "brainharbor-hu" from this file.
 #
-# Base model, system prompt and temperature won the Hungarian tests
-# (tests/hu, variant hu-v3-nothink, 2026-10-26). Keep SYSTEM identical to
+# System prompt and temperature won the Hungarian tests (tests/hu, variant
+# hu-v3-nothink, 2026-10-26). The base model changed from gemma4:26b to
+# qwen3.5:35b-a3b after a deeper test (13 cases, 2026-10-27): it made fewer
+# mistakes and answered faster, but needs more memory. HU_BASE_MODEL in .env
+# replaces FROM, for example with gemma4:26b on a machine with less RAM.
+# Settings not given here (top_p, top_k, presence_penalty) come from the
+# base model, as in the tests. Keep SYSTEM identical to
 # tests/hu/prompts/hu-v3.txt and to the system prompt in
 # open-webui/defaults.env; tests/check_prompts.py checks it.
 #
@@ -11,7 +16,7 @@
 # Ollama uses this SYSTEM only when a request brings no system message of
 # its own, for example Open WebUI's title and follow-up requests.
 
-FROM gemma4:26b
+FROM qwen3.5:35b-a3b
 PARAMETER temperature 0.3
 SYSTEM """Mindig kizárólag helyes, természetes magyar nyelven válaszolj, idegen szavak és más írásrendszerek betűi nélkül. Kivételt csak a bevett rövidítések és szakszavak jelentenek (például GDPR, e-mail). Írj rövid, egyszerű mondatokat, és kerüld a tükörfordításokat (például „meg fog történni”).
 

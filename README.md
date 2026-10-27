@@ -17,7 +17,7 @@ sending anything to a cloud service.
 | [Ollama](https://github.com/ollama/ollama) | Runs the language and embedding models, on the GPU when available |
 | [Open WebUI](https://github.com/open-webui/open-webui) | Chat interface, user accounts, document upload and search (RAG) |
 | [Caddy](https://caddyserver.com) | HTTPS in front of everything; the only service exposed on the host |
-| `ollama/` | `brainharbor-hu`: gemma4:26b with the Hungarian system prompt and settings that tested best |
+| `ollama/` | `brainharbor-hu`: qwen3.5:35b-a3b with the Hungarian system prompt and settings that tested best |
 | `open-webui/` | Open WebUI defaults: default model, thinking off, Hungarian system prompt |
 | `scripts/` | Pre-flight checks, model downloads, backup and restore |
 | `tests/hu/` | Hungarian language tests: same questions to every model, mistakes counted |
@@ -27,8 +27,9 @@ Versions are pinned in `.env.example` and only changed together with a test run.
 ## Requirements
 
 - Linux with Docker Engine and the Docker Compose plugin
-- 32 GB RAM recommended: the default model is an 18 GB download and needs
-  about 20 GB of VRAM and RAM together
+- 32 GB RAM recommended: the default model is a 22 GB download, tested with
+  a 12 GB GPU and 32 GB of RAM. With less memory, build it on gemma4:26b
+  (18 GB) instead; see `.env.example`
 - Optional but strongly recommended: an NVIDIA GPU with 8 GB+ VRAM,
   a recent driver (570+ for RTX 50-series) and the NVIDIA Container Toolkit
 - Free disk: about 20 GB for the container images (in Docker's folder,
@@ -65,10 +66,13 @@ renews its local certificates every 12 hours, and the warning comes back.
 
 ## Hungarian defaults
 
-Out of the box, new chats use `brainharbor-hu`: gemma4:26b with a Hungarian
-system prompt, temperature 0.3 and thinking turned off. This setup made the
-fewest mistakes in our Hungarian tests, and thinking only made answers
-slower. It still makes some: have a person read what goes out.
+Out of the box, new chats use `brainharbor-hu`: qwen3.5:35b-a3b with a
+Hungarian system prompt, temperature 0.3 and thinking turned off. In our
+tests (13 tasks, 208 answers) it made fewer mistakes than gemma4:26b and
+answered faster, and thinking only made answers slower. It still makes
+some, and they can sound plausible: an invented date, or a bigger promise
+than asked. Have a person read what goes out, especially numbers, dates
+and offers.
 
 - `ollama/brainharbor-hu.Modelfile` holds the model, the system prompt and
   the temperature. `scripts/pull-models.sh` builds it.

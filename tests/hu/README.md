@@ -101,8 +101,9 @@ between models, not equal to what users see in the chat window.
 
 The `modelfile` variant sends no system prompt or temperature, so the model
 uses its own from the Modelfile. With the same seed, `brainharbor-hu` should
-answer like `gemma4:26b` with `hu-v3-nothink`, with the same prompt token
-counts. In the first check (2026-10-26) 14 of 18 answers were identical word
+answer like its base model (`qwen3.5:35b-a3b`, or `HU_BASE_MODEL`) with
+`hu-v3-nothink`, with the same prompt token counts. In the first check
+(2026-10-26, on gemma4:26b) 14 of 18 answers were identical word
 for word; the other 4 were all in run 1, so most likely Ollama's prompt
 cache, still holding earlier requests, nudged the numbers. Different prompt
 token counts, or differences in every run, mean the Modelfile and
@@ -112,6 +113,9 @@ token counts, or differences in every run, mean the Modelfile and
 ```sh
 python3 tests/hu/run.py --models brainharbor-hu --variants modelfile,modelfile-16k
 ```
+
+Compare its `answers.md` with an earlier `hu-v3-nothink` run of the base
+model: run N uses the same seed in both.
 
 ## Adding cases and variants
 

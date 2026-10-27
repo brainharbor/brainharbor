@@ -98,14 +98,15 @@ think = false
 
 # For models that bring their own system prompt and temperature in a
 # Modelfile (brainharbor-hu). With the same seed, brainharbor-hu here should
-# answer like gemma4:26b with hu-v3-nothink (see README.md).
+# answer like its base model with hu-v3-nothink: qwen3.5:35b-a3b since
+# 2026-10-27, gemma4:26b before (see README.md).
 [variants.modelfile]
 description = "System prompt and temperature from the model's Modelfile, thinking turned off"
 think = false
 
 # Same with a 16k context, to see what the bigger KV cache costs in speed when
-# the model doesn't fit in VRAM. Against 8k on the RTX 5070: nothing (3.0 s vs
-# 3.3 s median), so the stack default became 16k (2026-10-26).
+# the model doesn't fit in VRAM. Against 8k on the RTX 5070 with gemma4:26b:
+# nothing (3.0 s vs 3.3 s median), so the stack default became 16k (2026-10-26).
 [variants.modelfile-16k]
 description = "Same as modelfile, with a 16k context"
 options = { num_ctx = 16384 }

@@ -17,7 +17,7 @@ hogy semmi sem kerül ki felhőszolgáltatáshoz.
 | [Ollama](https://github.com/ollama/ollama) | Futtatja a nyelvi és a beágyazási (embedding) modelleket; ha van GPU, azon |
 | [Open WebUI](https://github.com/open-webui/open-webui) | Csevegőfelület, felhasználói fiókok, dokumentumok feltöltése és keresés bennük (RAG) |
 | [Caddy](https://caddyserver.com) | Fogadja a HTTPS-kapcsolatokat; csak ez nyit portot a gépen |
-| `ollama/` | `brainharbor-hu`: a gemma4:26b a magyar rendszerprompttal és a tesztekben legjobbnak bizonyult beállításokkal |
+| `ollama/` | `brainharbor-hu`: a qwen3.5:35b-a3b a magyar rendszerprompttal és a tesztekben legjobbnak bizonyult beállításokkal |
 | `open-webui/` | Az Open WebUI alapbeállításai: alapértelmezett modell, kikapcsolt gondolkodás, magyar rendszerprompt |
 | `scripts/` | Előzetes ellenőrzés, modellek letöltése, mentés és visszaállítás |
 | `tests/hu/` | Magyar nyelvi tesztek: minden modell ugyanazokat a kérdéseket kapja, a hibákat megszámoljuk |
@@ -28,8 +28,9 @@ együtt változnak.
 ## Követelmények
 
 - Linux, Docker Engine és a Docker Compose bővítmény
-- 32 GB RAM ajánlott: az alapértelmezett modell 18 GB-os letöltés, és
-  futás közben nagyjából 20 GB-ot foglal a VRAM-ban és a RAM-ban együtt
+- 32 GB RAM ajánlott: az alapértelmezett modell 22 GB-os letöltés, 12 GB-os
+  videokártyával és 32 GB RAM-mal teszteltük. Kevesebb memóriával
+  építsd inkább a gemma4:26b-re (18 GB); lásd a `.env.example` fájlt
 - Nem kötelező, de erősen ajánlott: NVIDIA GPU legalább 8 GB VRAM-mal,
   friss driverrel (RTX 50-es sorozathoz 570 vagy újabb) és az NVIDIA
   Container Toolkittel
@@ -71,10 +72,13 @@ a figyelmeztetés visszajön.
 ## Magyar alapbeállítások
 
 Az új beszélgetések alapból a `brainharbor-hu` modellt használják: ez a
-gemma4:26b magyar rendszerprompttal, 0,3-es hőmérséklettel és kikapcsolt
-gondolkodással. Ez a beállítás hibázott a legkevesebbet a magyar
-tesztjeinkben, a gondolkodás pedig csak lassította a válaszokat. Hibák így
-is előfordulnak: amit kiküldesz, azt olvassa el egy ember.
+qwen3.5:35b-a3b magyar rendszerprompttal, 0,3-es hőmérséklettel és
+kikapcsolt gondolkodással. A tesztjeinkben (13 feladat, 208 válasz)
+kevesebbet hibázott, mint a gemma4:26b, és gyorsabban válaszolt; a
+gondolkodás csak lassította a válaszokat. Hibák így is előfordulnak, és
+hihetően hangozhatnak: egy kitalált dátum vagy a kértnél nagyobb ígéret.
+Amit kiküldesz, azt olvassa el egy ember, különösen a számokat, a
+dátumokat és az ajánlatokat.
 
 - Az `ollama/brainharbor-hu.Modelfile` tartalmazza a modellt, a
   rendszerpromptot és a hőmérsékletet. A `scripts/pull-models.sh` építi

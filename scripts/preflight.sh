@@ -40,9 +40,15 @@ fi
 
 mem_kib="$(awk '/^MemTotal:/ {print $2}' /proc/meminfo 2>/dev/null || echo 0)"
 mem_gib=$((mem_kib / 1024 / 1024))
-# Thresholds are slightly below 16/8 GiB because MemTotal excludes kernel-reserved memory.
-if ((mem_gib >= 15)); then
+# Thresholds are slightly below 32/16/8 GiB because MemTotal excludes kernel-reserved memory.
+if ((mem_gib >= 30)); then
   pass "RAM: ${mem_gib} GiB"
+elif ((mem_gib >= 15)); then
+  if [[ -z "$(env_get HU_BASE_MODEL)" ]]; then
+    warn "RAM: ${mem_gib} GiB; the default model was tested with 32 GiB (or set HU_BASE_MODEL=gemma4:26b in .env)"
+  else
+    pass "RAM: ${mem_gib} GiB"
+  fi
 elif ((mem_gib >= 7)); then
   warn "RAM: ${mem_gib} GiB (16 GiB or more recommended)"
 else
