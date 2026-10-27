@@ -97,9 +97,16 @@ git_() { git -c safe.directory="$BH_ROOT" -C "$BH_ROOT" "$@"; }
 if have git && git_ rev-parse --git-dir >/dev/null 2>&1; then
   commit="$(git_ rev-parse --short HEAD)"
   # Edits to tracked files (Caddyfile, compose files) are saved for reference.
-  if ! git_ diff --quiet HEAD; then
-    git_ diff HEAD >"$stage/config/local-changes.patch"
+  # git diff may rewrite the index, and as root that would leave
+  # .git/index owned by root, so it gets a copy of the index.
+  index="$(mktemp)"
+  cp "$(git_ rev-parse --absolute-git-dir)/index" "$index"
+  GIT_INDEX_FILE="$index" git_ diff HEAD >"$stage/config/local-changes.patch"
+  rm -f "$index" "$index.lock"
+  if [[ -s $stage/config/local-changes.patch ]]; then
     commit="$commit, with local changes"
+  else
+    rm -f "$stage/config/local-changes.patch"
   fi
 fi
 echo "Settings: .env (commit $commit)"
@@ -210,7 +217,8 @@ members=(BACKUP-INFO.txt)
 members+=(config caddy webui)
 tar -C "$stage" --numeric-owner -czf "$archive.part" "${members[@]}"
 mv "$archive.part" "$archive"
-echo "Archive: $archive ($(du -h "$archive" | cut -f1))"
+# Apparent size: on ZFS, du counts blocks, and a file just written may not have any yet.
+echo "Archive: $archive ($(du -h --apparent-size "$archive" | cut -f1))"
 
 # Names sort by date, oldest first.
 shopt -s nullglob
