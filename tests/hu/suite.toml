@@ -172,12 +172,13 @@ require = ["bocsánat|elnézés", "cser", "visszatérít|visszafizet|visszautal|
 id = "meeting-invite"
 prompt = """
 Írj egy rövid, barátságos e-mailt a kollégáknak, amelyben meghívod őket a jövő csütörtöki negyedéves értekezletre. \
-Az értekezlet 10 órakor kezdődik a nagy tárgyalóban, és körülbelül egy óráig tart. Tegeződj!
+Az értekezlet 10 órakor kezdődik a nagy tárgyalóban, és körülbelül egyórás lesz. Tegeződj!
 """
 require = ["csütörtök", "10", "tárgyaló"]
 avoid = [
   "értekezés",                # a treatise, not a meeting ("értekezlet")
   "szia mindenkinek",         # meant: "Sziasztok!" or "Szia mindenki!"
+  "egy óráig tart",           # ambiguous: "for an hour" or "until 1 o'clock"; say "egyórás"
 ]
 
 [[cases]]

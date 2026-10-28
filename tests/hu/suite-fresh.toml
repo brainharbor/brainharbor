@@ -1,0 +1,256 @@
+# Fresh Hungarian test cases for brAInharbor, read by run.py:
+#
+#   python3 tests/hu/run.py --suite tests/hu/suite-fresh.toml
+#
+# Written on 2026-10-28 for an honest final check of the Hungarian correction
+# filter. The system prompt, the filter rules and the known-mistake lists were
+# all tuned on suite.toml, never on these cases. Keep it that way: don't add
+# known mistakes from these answers here, and don't tune prompts on them. Then
+# this suite keeps showing how a change does on tasks it wasn't fitted to.
+
+[run]
+models = ["qwen3.5:35b-a3b", "gemma4:26b"]
+variants = ["hu-v3-nothink"]
+runs = 3
+order = "grouped"
+
+# Same as in suite.toml.
+[variants.hu-v3-nothink]
+description = "hu-v3 system prompt, temperature 0.3, thinking turned off"
+system_file = "prompts/hu-v3.txt"
+options = { temperature = 0.3 }
+think = false
+
+[variants.modelfile]
+description = "System prompt and temperature from the model's Modelfile, thinking turned off"
+think = false
+
+# Same as in suite.toml, so the run report flags the same known mistakes.
+[checks]
+dictionary = "hu_HU"
+ignore_words = [
+  "HR-",
+]
+avoid = [
+  "késedelméé",
+  "rendelése kiszállítás",
+  "megírt határidő",
+  "esetleges kellemetlenség",
+  "fog megtörténni",
+  "meg fog történni",
+  "késedelmesít",
+  "sajnálatunk, hogy",
+  "ki kell végez",
+  "elnézzük a kellemetlenség",
+  "jelezze választ",
+  "ne kattintanak",
+  "vettük tudomására",
+  "kérem, bocsánatot",
+  "szívesen bocsánatot",
+  "felhívta figyelmét",
+  "jelszók",
+  "szia mindenkinek",
+]
+copy_ngram = 6
+
+# ---------------------------------------------------------------------------
+# Letters and messages with given facts. check_numbers flags numbers that are
+# not in the request.
+
+[[cases]]
+id = "payment-reminder"
+prompt = """
+Írj udvarias, hivatalos fizetési emlékeztetőt a Kertvárosi Pékség Kft.-nek! A 2026/0318 számú, 186 400 forintos \
+számlájuk fizetési határideje október 15-én lejárt. Kérjük meg őket, hogy november 10-ig egyenlítsék ki a számlát, \
+és írjuk meg, hogy ha közben már fizettek, tekintsék tárgytalannak a levelet.
+"""
+require = ["2026/0318", "186 400|186400", "november 10", "tárgytalan"]
+check_numbers = true
+
+[[cases]]
+id = "price-increase"
+prompt = """
+Írj rövid, hivatalos levelet az ügyfeleinknek arról, hogy január 1-jétől 8%-kal emeljük a takarítási \
+szolgáltatásaink díját, mert nőttek a bér- és anyagköltségeink. A december 31-ig megkötött éves szerződések \
+díja a szerződés végéig nem változik.
+"""
+require = ["január 1", "8", "december 31"]
+check_numbers = true
+
+[[cases]]
+id = "out-of-office"
+prompt = """
+Írj rövid, hivatalos automatikus válaszüzenetet az e-mail-fiókomba: november 3. és 14. között szabadságon \
+vagyok. Sürgős ügyben Varga Zsófia kollégámat lehet keresni a varga.zsofia@pelda.hu címen. Visszatérésem után \
+minden levélre válaszolok.
+"""
+require = ["november 3", "14", "Varga Zsófi", "varga.zsofia@pelda.hu"]
+check_numbers = true
+
+# Informal, plural: the greeting and the verb forms are the test.
+[[cases]]
+id = "team-lunch"
+prompt = """
+Írj rövid, közvetlen hangú e-mailt a csapatnak: lezárult a projekt, ezért pénteken fél egykor közösen ebédelünk \
+a sarki olasz étteremben, a számlát a cég állja. Kérd meg őket, hogy csütörtök délig jelezzék, ki jön. Tegeződj!
+"""
+require = ["péntek", "fél egy|12", "csütörtök"]
+check_numbers = true
+allow_numbers = [12, 30]        # "12:30" for "fél egy"
+
+[[cases]]
+id = "return-reply"
+prompt = """
+Egy vásárlónk azt írta, hogy rossz méretű cipőt kapott: 42-est rendelt, de 44-est küldtünk neki. Írj neki rövid, \
+udvarias, hivatalos választ! Kérjünk elnézést, küldjünk díjmentes visszaküldési címkét, és írjuk meg, hogy \
+a helyes méretet a visszaküldött csomag beérkezése után két munkanapon belül postázzuk.
+"""
+require = ["elnézés|bocsánat", "42", "címk", "két munkanap|2 munkanap"]
+check_numbers = true
+
+[[cases]]
+id = "notice-summary"
+prompt = """
+Foglald össze három rövid pontban az alábbi közleményt!
+
+Kedves Kollégák! December 1-jétől megváltozik az irodaház parkolási rendje. A mélygarázsba ezentúl csak \
+a recepción igényelt matricával lehet behajtani; a matricát november 20-ig kell igényelni. A vendégek \
+a földszinti látogatói parkolót legfeljebb négy órán át használhatják. A kerékpártároló a hátsó bejáratnál marad, \
+az öltözők és a zuhanyzók pedig reggel 7 és este 8 óra között használhatók. Kérdés esetén Molnár Bencét \
+keressétek a 214-es melléken.
+"""
+require = ["december 1", "matric", "november 20"]
+check_numbers = true
+allow_numbers = [20]            # "20 óra" for "este 8"
+
+# "signing up" is "jelentkezés", not "pályázat"; Hungarian puts the family
+# name first ("Fekete Péter").
+[[cases]]
+id = "workshop-translation"
+prompt = """
+Fordítsd le természetes, hivatalos magyar nyelvre az alábbi e-mailt!
+
+Dear Ms. Horváth,
+
+Thank you for signing up for our spring workshop. Unfortunately, the workshop on 12 March has been postponed \
+to 26 March because our trainer is ill. Your registration remains valid for the new date. If the new date does \
+not suit you, please let us know by 5 March, and we will refund the participation fee of HUF 35,000 in full.
+
+Best regards,
+Péter Fekete
+Event Coordinator
+"""
+require = ["Horváth", "március 26", "március 5", "35 000|35000|35 ezer|35.000"]
+check_numbers = true
+allow_numbers = [35000]         # "35,000" in the English text
+
+# ---------------------------------------------------------------------------
+# A second one-page policy document.
+
+[[cases]]
+id = "travel-qa-answer"
+document_file = "documents/utazasi-szabalyzat.txt"
+prompt = """
+Az alábbi belső szabályzat alapján válaszolj a kérdésre. Ha a válasz nem szerepel a szabályzatban, írd meg, hogy \
+a szabályzat nem tartalmazza.
+
+{document}
+
+Kérdés: Mennyi napidíjat kapok egy 14 órás belföldi kiküldetésre, és mit kell csatolnom az elszámoláshoz, ha \
+a saját autómmal megyek?
+"""
+require = ["5 000|5000|5 ezer|ötezer", "útnyilvántartás", "száml|jegy"]
+check_numbers = true
+
+# The policy covers domestic trips only: the right answer says it has no
+# foreign per diem. "3 × 5 000 Ft" is a made-up answer.
+[[cases]]
+id = "travel-qa-unknown"
+document_file = "documents/utazasi-szabalyzat.txt"
+prompt = """
+Az alábbi belső szabályzat alapján válaszolj a kérdésre. Ha a válasz nem szerepel a szabályzatban, írd meg, hogy \
+a szabályzat nem tartalmazza.
+
+{document}
+
+Kérdés: Mennyi napidíj jár egy háromnapos németországi kiküldetésre?
+"""
+require = ["nem szerepel|nem tartalmaz|külön szabályzat|nem vonatkozik|nem derül ki|nem található|nincs benne|nem tér ki|nem ad meg|nincs megadva|nincs információ|nincs adat"]
+check_numbers = true
+
+[[cases]]
+id = "travel-summary"
+document_file = "documents/utazasi-szabalyzat.txt"
+prompt = """
+Foglald össze az alábbi szabályzatot legfeljebb öt rövid pontban egy új munkatársnak! Tegeződj!
+
+{document}
+"""
+require = ["napidíj"]
+check_numbers = true
+allow_numbers = [22]            # "22 óra" for "este 10"
+
+# ---------------------------------------------------------------------------
+# Four planted mistakes. Hunspell knows "kívánnunk" (we have to wish) and
+# "fáradtság" (tiredness; meant: "fáradság", effort), and "a ügyeleti" needs
+# the "az" article: only "teljesiteni" is a misspelled word.
+
+[[cases]]
+id = "proofread-holiday"
+prompt = """
+Javítsd ki a helyesírási és nyelvtani hibákat az alábbi szövegben! Csak a javított szöveget írd le, magyarázat nélkül.
+
+Tisztelt Partnereink! Tájékoztatjuk Önöket, hogy irodánk december 24. és január 2. között zárva lesz. Ez idő alatt \
+a beérkező megrendeléseket nem tudjuk teljesiteni, azokat januárban a beérkezés sorrendjében dolgozzuk fel. \
+Sürgős esetben a ügyeleti telefonszámunkon érhetnek el bennünket. Köszönjük az egész éves együttműködésüket \
+és a fáradtságukat. Békés ünnepeket kívánnunk!
+"""
+require = ["december 24", "január 2"]
+avoid = ["teljesiteni", "a ügyeleti", "fáradtság", "kívánnunk"]
+check_numbers = true
+
+# The letter has no budget: the right answer says "nincs megadva".
+[[cases]]
+id = "extract-dinner"
+prompt = """
+Szedd pontokba az alábbi levélből: a feladó neve, a cég neve, a kért szolgáltatás, a dátum, az időpont, \
+a résztvevők száma, az e-mail-cím és a költségkeret. Ha valamelyik adat hiányzik, írd mellé, hogy „nincs megadva”.
+
+Jó napot kívánok! Szabó Dóra vagyok, a Napfény Utazási Iroda irodavezetője. Céges vacsorát szeretnénk tartani \
+november 28-án este 7 órától, nagyjából 25 főre, lehetőleg a belvárosban. Kérem, küldjenek árajánlatot \
+a dora.szabo@napfenyutazas.hu címre. Köszönöm!
+"""
+require = ["Szabó Dóra", "Napfény", "vacsor", "november 28", "25", "dora.szabo@napfenyutazas.hu", "nincs megadva"]
+check_numbers = true
+allow_numbers = [19]            # "19 óra" for "este 7"
+
+[[cases]]
+id = "backup-explain"
+prompt = """
+Magyarázd el egyszerűen, legfeljebb öt mondatban egy kisvállalkozás vezetőjének, mi a különbség a biztonsági \
+mentés és a fájlok felhőbe szinkronizálása között!
+"""
+require = ["mentés"]
+
+# Half of 120 000 Ft is 60 000 Ft: correct if mentioned.
+[[cases]]
+id = "installment-reply"
+prompt = """
+Egy ügyfelünk, Kiss Andrea azt kérte, hogy a weboldala elkészítéséért járó 120 000 forintos díjat három \
+részletben fizethesse. Két részletet tudunk elfogadni: a díj felét a szerződés aláírásakor, a másik felét \
+a kész weboldal átadásakor kell kifizetni. Írj neki rövid, udvarias, hivatalos választ!
+"""
+require = ["Kiss", "két részlet|2 részlet", "felét|60 000|60000|60 ezer"]
+check_numbers = true
+allow_numbers = [60000]
+
+# Informal, one person.
+[[cases]]
+id = "reschedule-message"
+prompt = """
+Írj rövid, barátságos üzenetet Tamás kollégámnak: a holnap reggel 9-re tervezett megbeszélésünket át kell \
+tennünk csütörtök délután 2 órára, mert ütközik egy ügyféltalálkozóval. Kérdezd meg, megfelel-e neki. Tegeződj!
+"""
+require = ["Tamás", "csütörtök", "2|14"]
+check_numbers = true
+allow_numbers = [14]            # "14 óra" for "délután 2"

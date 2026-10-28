@@ -5,6 +5,8 @@ proves little, so this suite asks every model the same questions several
 times and counts what went wrong.
 
 - `suite.toml`: test cases, prompt variants, known mistakes and run defaults
+- `suite-fresh.toml`: cases that nothing was tuned on, for an honest check of a
+  change: `python3 tests/hu/run.py --suite tests/hu/suite-fresh.toml`
 - `prompts/`: system prompts used by the variants
 - `run.py`: the runner (Python 3.11+, standard library only)
 - `results/`: one folder per run, not committed
