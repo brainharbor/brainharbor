@@ -44,6 +44,10 @@ services:
       # Document search (RAG) embeddings are computed by Ollama as well.
       RAG_EMBEDDING_ENGINE: ollama
       RAG_EMBEDDING_MODEL: ${EMBEDDING_MODEL:-bge-m3}
+      # Show the model which file each search result comes from. Without it,
+      # similar rules from different documents got mixed up (tests/hu/rag).
+      # Read at every start, unlike defaults.env.
+      RAG_SOURCE_METADATA_KEYS: source
 
   caddy:
     image: caddy:${CADDY_VERSION:-2.11.7}

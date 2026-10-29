@@ -12,6 +12,17 @@
     `HU_BASE_MODEL=gemma4:26b` and `CHAT_MODELS=gemma4:26b` in `.env`, then
     run `scripts/pull-models.sh`.
   - `scripts/preflight.sh` now recommends 32 GB of RAM for the default model.
+- **Document search (RAG):** the model now sees which file each search
+  result comes from, and Open WebUI no longer rewrites the question into
+  search queries first. In `tests/hu/rag` (17 Hungarian company documents,
+  3 runs per question) the held-out questions got 52 correct answers of 54
+  instead of 50, and the median answer time went from 4.2 s to 2.5 s.
+  Without the file names, the model mixed up similar rules from different
+  documents, such as the domestic and the foreign travel allowance.
+  - Existing installs get the file names after `docker compose up -d`.
+  - Query rewriting is turned off on new installs only. On an existing
+    one, turn off Retrieval Query Generation under Admin Panel > Settings >
+    Interface.
 - **`tests/hu`:** seven new cases (proofreading, data extraction, questions
   about a policy document, a discount reply), a check for numbers that aren't
   in the prompt, and long documents in prompts (`document_file`).

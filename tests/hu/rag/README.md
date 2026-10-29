@@ -18,7 +18,8 @@ engine.
   answer is (a verbatim quote) and what the answer must and must not
   contain. 12 have no answer in the documents. 22 are holdout: reports
   leave them out until the settings are chosen.
-- `configs.toml`: the settings tried; `[base]` is what brAInharbor ships
+- `configs.toml`: the settings tried; `[base]` is what brAInharbor shipped
+  before these tests, `P8-filename-no-query-gen` is what it ships now
 - `templates/`: Hungarian RAG prompt templates
 - `compose.rag-test.yaml`: a separate Open WebUI for the test
 - `rag.py`: the runner (Python 3.11+, standard library only)

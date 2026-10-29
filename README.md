@@ -81,6 +81,13 @@ and offers.
   WebUI to legacy function calling: in its default (native) mode, the
   descriptions of Open WebUI's built-in tools add about 6000 tokens to
   every message, and the answer starts seconds later.
+- Document search (RAG): `compose.yaml` shows the model which file each
+  search result comes from, and `open-webui/defaults.env` turns off the
+  rewriting of questions into search queries. In our test with Hungarian
+  company documents ([tests/hu/rag](tests/hu/rag/README.md)) this gave 52
+  correct answers of 54 instead of 50, and answers came 40% faster. The
+  model sees the file names, so name documents after what is in them:
+  `belfoldi-kikuldetes.pdf`, not `scan_0012.pdf`.
 
 ## Storage
 

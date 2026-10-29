@@ -89,6 +89,14 @@ dátumokat és az ajánlatokat.
   függvényhívási módra kapcsolja: az alapértelmezett (natív) módban az
   Open WebUI beépített eszközeinek leírása kb. 6000 tokennel növeli minden
   üzenet hosszát, és a válasz másodpercekkel később indul.
+- Dokumentumkeresés (RAG): a `compose.yaml` megmutatja a modellnek, melyik
+  fájlból jön egy találat, az `open-webui/defaults.env` pedig kikapcsolja a
+  kérdések keresőkifejezésekké való átírását. Magyar céges
+  dokumentumokkal végzett tesztünkben
+  ([tests/hu/rag](tests/hu/rag/README.md), angolul) így 54 válaszból 52
+  lett helyes 50 helyett, és a válaszok 40%-kal gyorsabban jöttek. A modell
+  látja a fájlneveket, ezért a fájl neve mondja meg, mi van benne:
+  `belfoldi-kikuldetes.pdf`, ne `scan_0012.pdf`.
 
 ## Tárolás
 
