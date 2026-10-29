@@ -9,6 +9,8 @@ times and counts what went wrong.
   change: `python3 tests/hu/run.py --suite tests/hu/suite-fresh.toml`
 - `prompts/`: system prompts used by the variants
 - `run.py`: the runner (Python 3.11+, standard library only)
+- `rag/`: a separate test of document search (RAG) in Open WebUI, with its
+  own documents, questions and runner; see `rag/README.md`
 - `results/`: one folder per run, not committed
 
 ## Setup

@@ -1,0 +1,133 @@
+# Settings tried by rag.py. Every entry changes [base] only where it says so.
+#
+# [base] is what brAInharbor ships today: Open WebUI v0.12.4 defaults, with
+# bge-m3 through Ollama for embeddings (compose.yaml).
+
+[base]
+embedding_engine = "ollama"      # "" = sentence-transformers inside Open WebUI
+embedding_model = "bge-m3"
+chunk_size = 1000                # characters
+chunk_overlap = 100
+chunk_min_size_target = 0        # merge smaller chunks up to this size; 0 = off
+markdown_header_splitter = true
+top_k = 3                        # chunks given to the model
+hybrid = false                   # BM25 + vector search
+bm25_weight = 0.5
+reranker_engine = ""             # "" = sentence-transformers inside Open WebUI
+reranker_model = ""
+top_k_reranker = 3
+relevance_threshold = 0.0
+template = "default"             # "default" or a file in templates/
+query_generation = true          # the model rewrites the question into search queries
+model = "brainharbor-hu:latest"
+context = "rag"                  # "rag", or "full": the question's source documents whole
+
+# ---------------------------------------------------------------------------
+# Pass 1 (`rag.py search`): search only, no chat model. Every config is asked
+# for its 10 best chunks, so top_k does not matter here: hit@3, @5, @8 and
+# @10 come from the same list.
+
+[[search]]
+name = "A1-bge-m3"
+
+[[search]]
+name = "A2-qwen3-embedding"
+embedding_model = "qwen3-embedding:0.6b"
+
+[[search]]
+name = "A3-embeddinggemma"
+embedding_model = "embeddinggemma"
+
+# English-only model, the Open WebUI default: a floor, not a candidate.
+[[search]]
+name = "A4-minilm"
+embedding_engine = ""
+embedding_model = "sentence-transformers/all-MiniLM-L6-v2"
+
+[[search]]
+name = "B1-chunk500"
+chunk_size = 500
+chunk_overlap = 50
+
+[[search]]
+name = "B3-chunk1500"
+chunk_size = 1500
+chunk_overlap = 150
+
+[[search]]
+name = "B4-chunk2000"
+chunk_size = 2000
+chunk_overlap = 200
+
+[[search]]
+name = "B5-chunk1000-min500"
+chunk_min_size_target = 500
+
+# Hybrid search without a reranker: BM25 adds candidates, and Open WebUI
+# sorts the pooled chunks by embedding similarity again.
+[[search]]
+name = "D1-hybrid"
+hybrid = true
+
+# A reranker needs hybrid search switched on in Open WebUI; with BM25 weight 0
+# it only re-sorts the vector search results. 20 candidates, 10 kept.
+[[search]]
+name = "E1-reranker"
+hybrid = true
+bm25_weight = 0.0
+reranker_model = "BAAI/bge-reranker-v2-m3"
+top_k = 20
+top_k_reranker = 10
+
+[[search]]
+name = "E2-reranker-bm25"
+hybrid = true
+reranker_model = "BAAI/bge-reranker-v2-m3"
+top_k = 20
+top_k_reranker = 10
+
+# ---------------------------------------------------------------------------
+# Pass 2 (`rag.py answers`): full answers.
+#
+# Pass 1 (2026-10-28): the shipped search found the source of every tuning
+# question in its first 3 chunks, and no other embedding model or chunk size
+# did better. So every config here keeps the shipped search and changes one
+# thing on the answer side.
+
+[[answers]]
+name = "P1-base"
+
+[[answers]]
+name = "P3-hu-template"
+template = "hu-v1.txt"
+
+# The model rewrites the question into search queries (English prompt). In
+# the first run that lost the source of e04, which plain search finds first.
+[[answers]]
+name = "P4-no-query-gen"
+query_generation = false
+
+# The question's source documents whole: what perfect search could give.
+# Questions without an answer get no document here, so their row is "–".
+[[answers]]
+name = "P5-full-context"
+context = "full"
+
+# brainharbor-hu built on gemma4:26b (see README.md): the same system
+# prompt, another model.
+[[answers]]
+name = "P6-gemma"
+model = "brainharbor-hu-gemma:latest"
+
+# Run 3. Open WebUI tells the model which file a chunk is from only when
+# RAG_SOURCE_METADATA_KEYS names it; by default the <source> tag has no file
+# name, and the model mixed up the domestic and the foreign travel rules.
+# These two need the test Open WebUI started with the file name on:
+#   RAG_SOURCE_METADATA_KEYS=source docker compose -f tests/hu/rag/compose.rag-test.yaml up -d
+# Same settings as P1 and P4 otherwise.
+[[answers]]
+name = "P7-filename"
+
+[[answers]]
+name = "P8-filename-no-query-gen"
+query_generation = false

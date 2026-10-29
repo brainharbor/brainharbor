@@ -15,6 +15,11 @@
 - **`tests/hu`:** seven new cases (proofreading, data extraction, questions
   about a policy document, a discount reply), a check for numbers that aren't
   in the prompt, and long documents in prompts (`document_file`).
+- **`tests/hu/rag`:** a test of Open WebUI's document search (RAG) with
+  Hungarian documents: 17 made-up company documents, 70 questions with an
+  answer key, and a runner that compares embedding models, chunk sizes,
+  hybrid search, a reranker and prompt templates on a separate, throwaway
+  Open WebUI.
 
 ## v0.1.0 (2026-10-27)
 

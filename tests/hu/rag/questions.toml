@@ -1,0 +1,646 @@
+# Questions and answer key for the Hungarian RAG test (tests/hu/rag).
+#
+# type:     egyszeru (one fact), tobbreszes (two facts, often from two
+#           documents), ekezet (typed without accents or with typos),
+#           folytatas (a follow-up question; `history` is the earlier turn),
+#           nincs (the documents hold no answer), tablazat (from a table)
+# split:    tune (used to choose settings) or holdout (looked at only at
+#           the end, to check the chosen settings)
+# sources:  where the answer is; `quote` is verbatim from the document and
+#           is what the search must find. Several entries: all are needed.
+#           `doc` may list several files when the same sentence is in each.
+#           With `any_source = true`, any one of the entries is enough.
+# require:  every entry must be in the answer; "a|b" means a or b
+#           (case-insensitive substrings, as in suite.toml). Use stems where
+#           a suffix changes the word: "24 ór" matches "24 órán", "24 óra" not.
+# forbid:   none of these may be in the answer (usually the value from a
+#           similar rule in another document)
+#
+# Written before any run; the checksum of this file is in README.md.
+# Changed after the first run, with the reason:
+# - 2026-10-28, t05: require "24 óra" did not match "24 órán belül" (the
+#   suffix lengthens a to á), so a right answer counted as wrong. Stems now.
+
+# ---------------------------------------------------------------------------
+# One fact
+
+[[questions]]
+id = "e01"
+type = "egyszeru"
+split = "tune"
+question = "Hány napot dolgozhatok otthonról egy héten?"
+sources = [{ doc = "tavmunka-szabalyzat.md", quote = "hetente legfeljebb két napot dolgozhat távmunkában" }]
+require = ["két nap|2 nap|kettő|két távmunkanap"]
+
+[[questions]]
+id = "e02"
+type = "egyszeru"
+split = "tune"
+question = "Mennyi pénzt kapok az otthoni rezsire és internetre, ha távmunkában dolgozom?"
+sources = [{ doc = "tavmunka-szabalyzat.md", quote = "havi 5 000 forint átalányt fizet" }]
+require = ["5 000|5000|5.000|ötezer"]
+
+[[questions]]
+id = "e03"
+type = "egyszeru"
+split = "holdout"
+question = "Mennyi napidíj jár, ha egy belföldi kiküldetés 14 órán át tart?"
+sources = [{ doc = "belfoldi-kikuldetes.md", quote = "tizenkét óránál hosszabb kiküldetésnél 5 000 forint" }]
+require = ["5 000|5000|5.000|ötezer"]
+forbid = ["euró"]
+
+[[questions]]
+id = "e04"
+type = "egyszeru"
+split = "tune"
+question = "Ki hagyja jóvá, ha külföldre kell utaznom a cég megbízásából?"
+sources = [{ doc = "kulfoldi-kikuldetes.md", quote = "Külföldi kiküldetést az ügyvezető hagy jóvá." }]
+require = ["ügyvezető"]
+
+[[questions]]
+id = "e05"
+type = "egyszeru"
+split = "tune"
+question = "Legfeljebb mennyibe kerülhet egy éjszakai szállás Párizsban, ha kiküldetésen vagyok?"
+sources = [{ doc = "kulfoldi-kikuldetes.md", quote = "Londonban, Párizsban, Zürichben és Koppenhágában a felső határ 160 euró" }]
+require = ["160"]
+forbid = ["30 000"]
+
+[[questions]]
+id = "e06"
+type = "egyszeru"
+split = "holdout"
+question = "Hány nap alapszabadság jár egy évre?"
+sources = [{ doc = "szabadsag-es-tavollet.md", quote = "évente 20 munkanap alapszabadság jár" }]
+require = ["20|húsz"]
+
+[[questions]]
+id = "e07"
+type = "egyszeru"
+split = "tune"
+question = "Kaphatok szabadnapot a születésnapomra?"
+sources = [{ doc = "szabadsag-es-tavollet.md", quote = "születésnapi szabadnap: évente 1 munkanap, amelyet a születésnap hónapjában kell kivenni" }]
+require = ["hónap"]
+
+[[questions]]
+id = "e08"
+type = "egyszeru"
+split = "tune"
+question = "Meddig kell beírnom a nyári szabadságomat a tervbe?"
+sources = [{ doc = "szabadsag-es-tavollet.md", quote = "március 31-ig be kell jelölni az éves szabadságtervben" }]
+require = ["március 31|márc. 31|03.31|03. 31"]
+
+[[questions]]
+id = "e09"
+type = "egyszeru"
+split = "holdout"
+question = "Milyen hosszú legyen a jelszavam?"
+sources = [{ doc = "informatikai-biztonsag.md", quote = "legalább 12 karakter hosszúnak kell lennie" }]
+require = ["12|tizenkét"]
+
+[[questions]]
+id = "e10"
+type = "egyszeru"
+split = "tune"
+question = "Hány naponta kell jelszót cserélni?"
+sources = [{ doc = "informatikai-biztonsag.md", quote = "A jelszavakat nem kell rendszeresen cserélni." }]
+require = ["nem kell"]
+forbid = ["90 nap", "30 nap", "180 nap", "60 nap"]
+
+[[questions]]
+id = "e11"
+type = "egyszeru"
+split = "tune"
+question = "Hová küldjem, ha gyanús e-mailt kaptam?"
+sources = [{ doc = "informatikai-biztonsag.md", quote = "továbbítsa a biztonsag@pelda.hu címre" }]
+require = ["biztonsag@pelda.hu"]
+
+[[questions]]
+id = "e12"
+type = "egyszeru"
+split = "holdout"
+question = "Meddig lehet felhasználni a webáruházas ajándékutalványt?"
+sources = [{ doc = "ugyfelszolgalati-gyik.md", quote = "a vásárlástól számított egy évig érvényes" }]
+require = ["egy év|1 év|12 hónap"]
+
+[[questions]]
+id = "e13"
+type = "egyszeru"
+split = "tune"
+question = "Pénteken meddig lehet telefonon elérni az ügyfélszolgálatot?"
+sources = [{ doc = "ugyfelszolgalati-gyik.md", quote = "pénteken 8 és 14 óra között érhető el telefonon" }]
+require = ["14"]
+
+[[questions]]
+id = "e14"
+type = "egyszeru"
+split = "tune"
+question = "Mekkora csomagot lehet csomagautomatába kérni?"
+sources = [{ doc = "ugyfelszolgalati-gyik.md", quote = "legfeljebb 20 kilogramm súlyú és 60 × 40 × 40 centiméteres csomagig" }]
+require = ["20", "60"]
+
+[[questions]]
+id = "e15"
+type = "egyszeru"
+split = "holdout"
+question = "Hány nap alatt gondolhatom meg magam, ha a webáruházban vásároltam?"
+sources = [{ doc = "jotallas-es-visszakuldes.md", quote = "az átvétel napjától számított 14 napon belül indokolás nélkül elállhat" }]
+require = ["14|tizennégy"]
+
+[[questions]]
+id = "e16"
+type = "egyszeru"
+split = "tune"
+question = "Meddig kérhetem, hogy kicseréljék a terméket, ha rögtön elromlik?"
+sources = [{ doc = "jotallas-es-visszakuldes.md", quote = "számított 3 munkanapon belül meghibásodik" }]
+require = ["3 munkanap|három munkanap"]
+
+[[questions]]
+id = "e17"
+type = "egyszeru"
+split = "tune"
+question = "Meddig őrzik a bemutatóterem kameráinak felvételeit?"
+sources = [{ doc = "adatkezelesi-tajekoztato.md", quote = "A 3 munkanapos megőrzési idő után a kamerafelvételek automatikusan törlődnek" }]
+require = ["3 munkanap|három munkanap"]
+
+[[questions]]
+id = "e18"
+type = "egyszeru"
+split = "holdout"
+question = "Van a cégnek adatvédelmi tisztviselője?"
+sources = [{ doc = "adatkezelesi-tajekoztato.md", quote = "Adatvédelmi tisztviselő kijelölésére a Példa Kft. nem köteles" }]
+require = ["nem|nincs", "adatvedelem@pelda.hu"]
+
+[[questions]]
+id = "e19"
+type = "egyszeru"
+split = "tune"
+question = "Mennyi pénzt kapok havonta a SZÉP-kártyámra?"
+sources = [{ doc = "uj-munkatarsak-kezikonyve.md", quote = "havonta 20 000 forintot utalunk a SZÉP-kártya vendéglátás alszámlájára" }]
+require = ["20 000|20000|20.000|húszezer"]
+
+[[questions]]
+id = "e20"
+type = "egyszeru"
+split = "tune"
+question = "Meddig kell lefoglalni a helyet a mélygarázsban?"
+sources = [{ doc = "uj-munkatarsak-kezikonyve.md", quote = "legkésőbb az előző munkanap 16 óráig" }]
+require = ["16"]
+
+[[questions]]
+id = "e21"
+type = "egyszeru"
+split = "holdout"
+question = "Hol kell gyülekezni, ha tűzriadó van?"
+sources = [{ doc = "munkavedelem-es-tuzvedelem.md", quote = "A gyülekezési hely az épület előtti parkban, a szökőkútnál van." }]
+require = ["szökőkút"]
+
+[[questions]]
+id = "e22"
+type = "egyszeru"
+split = "tune"
+question = "Mennyit fizet a cég a képernyős munkához szükséges szemüvegre?"
+sources = [{ doc = "munkavedelem-es-tuzvedelem.md", quote = "legfeljebb 30 000 forintig megtéríti" }]
+require = ["30 000|30000|30.000|harmincezer"]
+
+[[questions]]
+id = "e23"
+type = "egyszeru"
+split = "tune"
+question = "Milyen gyakran kell vízkőteleníteni a kávéfőzőt, ha kemény a víz?"
+sources = [{ doc = "kavefozok-hasznalati-utmutato.md", quote = "3. fokozat (kemény) | havonta" }]
+require = ["havonta|havonként|havi egy|egy hónap|minden hónap"]
+
+[[questions]]
+id = "e24"
+type = "egyszeru"
+split = "holdout"
+question = "Mit jelent az E2 hibakód az automata kávéfőzőn?"
+sources = [{ doc = "kavefozok-hasznalati-utmutato.md", quote = "Tele van a zaccfiók" }]
+require = ["zacc"]
+forbid = ["nem ürül", "lefolyó"]
+
+[[questions]]
+id = "e25"
+type = "egyszeru"
+split = "tune"
+question = "Mennyi ideig megy az Eco program a mosogatógépen?"
+sources = [{ doc = "mosogatogepek-hasznalati-utmutato.md", quote = "3 óra 40 perc" }]
+require = ["3 óra 40|3:40|220 perc|három óra negyven"]
+
+[[questions]]
+id = "e26"
+type = "egyszeru"
+split = "tune"
+question = "Hány árajánlatot kell bekérni egy nettó 500 ezer forintos beszerzéshez?"
+sources = [{ doc = "beszerzesi-szabalyzat.md", quote = "100 001 – 1 000 000 forint | az osztályvezető | legalább 2 árajánlat" }]
+require = ["két árajánlat|2 árajánlat|két ajánlat|2 ajánlat|kettő"]
+
+[[questions]]
+id = "e27"
+type = "egyszeru"
+split = "holdout"
+question = "Mennyit lehet egyszerre fizetni a céges bankkártyával?"
+sources = [{ doc = "beszerzesi-szabalyzat.md", quote = "egyszerre legfeljebb 200 000 forint" }]
+require = ["200 000|200000|200.000|kétszázezer"]
+
+[[questions]]
+id = "e28"
+type = "egyszeru"
+split = "tune"
+question = "Elfogadhatok egy szállítótól egy 15 ezer forintos ajándékot?"
+sources = [{ doc = "etikai-kodex.md", quote = "alkalmanként legfeljebb 10 000 forint értékű ajándékot lehet elfogadni" }]
+require = ["nem", "10 000|10000|10.000|tízezer"]
+
+[[questions]]
+id = "e29"
+type = "egyszeru"
+split = "tune"
+question = "Hány óráig kell leadni egy webes rendelést, hogy még aznap elinduljon?"
+sources = [{ doc = "raktar-es-visszaru.md", quote = "A webáruházban 14 óráig beérkezett és kifizetett rendeléseket" }]
+require = ["14"]
+
+[[questions]]
+id = "e30"
+type = "egyszeru"
+split = "holdout"
+question = "Mennyi váltópénz legyen a bemutatóterem kasszájában nyitáskor?"
+sources = [{ doc = "bemutatoterem-mukodesi-rendje.md", quote = "a kasszában nyitáskor 30 000 forint váltópénznek kell lennie" }]
+require = ["30 000|30000|30.000|harmincezer"]
+
+# ---------------------------------------------------------------------------
+# Two or more facts
+
+[[questions]]
+id = "t01"
+type = "tobbreszes"
+split = "tune"
+question = "Mekkora támogatást kaphatok az otthoni munkahely berendezésére, és mennyi a havi rezsiátalány?"
+sources = [
+  { doc = "tavmunka-szabalyzat.md", quote = "legfeljebb 40 000 forintos eszköztámogatás igényelhető" },
+  { doc = "tavmunka-szabalyzat.md", quote = "havi 5 000 forint átalányt fizet" },
+]
+require = ["40 000|40000|40.000|negyvenezer", "5 000|5000|5.000|ötezer"]
+
+[[questions]]
+id = "t02"
+type = "tobbreszes"
+split = "tune"
+question = "Mennyivel előre kell jóváhagyatni egy belföldi és mennyivel egy külföldi kiküldetést?"
+sources = [
+  { doc = "belfoldi-kikuldetes.md", quote = "legalább öt munkanappal az utazás előtt" },
+  { doc = "kulfoldi-kikuldetes.md", quote = "legalább tíz munkanappal az indulás előtt kell benyújtani" },
+]
+require = ["öt munkanap|5 munkanap", "tíz munkanap|10 munkanap"]
+
+[[questions]]
+id = "t03"
+type = "tobbreszes"
+split = "holdout"
+question = "Mennyi napidíj jár egy 10 órás belföldi útra, és mennyi egy 10 órás külföldi útra?"
+sources = [
+  { doc = "belfoldi-kikuldetes.md", quote = "hat és tizenkét óra közötti kiküldetésnél 3 000 forint" },
+  { doc = "kulfoldi-kikuldetes.md", quote = "nyolc óránál hosszabb külföldi tartózkodás esetén napi 40 euró" },
+]
+require = ["3 000|3000|3.000|háromezer", "40 euró|40 eur|40,00 eur|negyven euró"]
+
+[[questions]]
+id = "t04"
+type = "tobbreszes"
+split = "tune"
+question = "Egy 34 éves munkatársnak két kisgyereke van. Hány nap alap- és pótszabadság jár neki egy évben?"
+sources = [
+  { doc = "szabadsag-es-tavollet.md", quote = "évente 20 munkanap alapszabadság jár" },
+  { doc = "szabadsag-es-tavollet.md", quote = "| 33 év | 4 munkanap |" },
+  { doc = "szabadsag-es-tavollet.md", quote = "két gyermek után 4" },
+]
+# 20 + 4 (age) + 4 (two children); 29 with the birthday day off.
+require = ["28|29|huszonnyolc|huszonkilenc"]
+
+[[questions]]
+id = "t05"
+type = "tobbreszes"
+split = "tune"
+question = "Ha elveszítem a céges laptopomat és a céges telefonomat is, mennyi időm van bejelenteni őket?"
+sources = [
+  { doc = ["tavmunka-szabalyzat.md", "informatikai-biztonsag.md"], quote = "A céges laptop elvesztését vagy ellopását 24 órán belül" },
+  { doc = "informatikai-biztonsag.md", quote = "legkésőbb két órán belül jelenteni kell a 199-es belső ügyeleti számon" },
+]
+require = ["24 ór|huszonnégy ór", "két ór|2 ór"]  # stems: "órán" has á
+
+[[questions]]
+id = "t06"
+type = "tobbreszes"
+split = "holdout"
+question = "Mit jelent az E1 hibakód a mosogatógépen, és mit az automata kávéfőzőn?"
+sources = [
+  { doc = "mosogatogepek-hasznalati-utmutato.md", quote = "| E1 | Nem érkezik víz |" },
+  { doc = "kavefozok-hasznalati-utmutato.md", quote = "Üres a víztartály vagy rosszul ül a helyén" },
+]
+require = ["nem érkezik víz|nem kap vizet|vízcsap|vízellátás|befolyó", "víztartály"]
+
+[[questions]]
+id = "t07"
+type = "tobbreszes"
+split = "tune"
+question = "Mennyi időm van elállni egy webáruházas vásárlástól, és ki fizeti a visszaküldést?"
+sources = [
+  { doc = "jotallas-es-visszakuldes.md", quote = "az átvétel napjától számított 14 napon belül indokolás nélkül elállhat" },
+  { doc = "jotallas-es-visszakuldes.md", quote = "A visszaküldés költsége a fogyasztót terheli" },
+]
+require = ["14|tizennégy", "fogyasztó|vevő|vásárló|ön|te fizet|neked kell|önnek kell|magad|saját"]
+
+[[questions]]
+id = "t08"
+type = "tobbreszes"
+split = "tune"
+question = "Hánykor kell beérnem az első munkanapomon, és milyen iratokat vigyek magammal?"
+sources = [
+  { doc = "uj-munkatarsak-kezikonyve.md", quote = "reggel 9 órára a recepcióra kell érkezni" },
+  { doc = "uj-munkatarsak-kezikonyve.md", quote = "az adóazonosító jeledet és a TAJ-számodat" },
+]
+require = ["9", "adóazonosító", "TAJ"]
+
+[[questions]]
+id = "t09"
+type = "tobbreszes"
+split = "holdout"
+question = "Ha beteg vagyok, meddig kell szólnom, és mikor kell leadnom az orvosi igazolást?"
+sources = [
+  { doc = ["tavmunka-szabalyzat.md", "szabadsag-es-tavollet.md"], quote = "legkésőbb az adott munkanap reggel 9 óráig értesíti a közvetlen vezetőjét és a HR-t" },
+  { doc = "szabadsag-es-tavollet.md", quote = "a munkába állást követő első munkanapon kell leadni a HR-nek" },
+]
+require = ["9", "első munkanap"]
+
+[[questions]]
+id = "t10"
+type = "tobbreszes"
+split = "tune"
+question = "Mekkora beszerzéshez kell az ügyvezető jóváhagyása, és mekkora értékű ajándékot fogadhatok el egy szállítótól?"
+sources = [
+  { doc = "beszerzesi-szabalyzat.md", quote = "1 000 000 forint felett | az ügyvezető" },
+  { doc = "etikai-kodex.md", quote = "alkalmanként legfeljebb 10 000 forint értékű ajándékot lehet elfogadni" },
+]
+require = ["1 000 000|1000000|1.000.000|egymillió|1 millió|egy millió", "10 000|10000|10.000|tízezer"]
+
+# ---------------------------------------------------------------------------
+# Typed without accents, or with typos
+
+[[questions]]
+id = "k01"
+type = "ekezet"
+split = "tune"
+question = "mennyi a napidij kulfoldon?"
+sources = [{ doc = "kulfoldi-kikuldetes.md", quote = "nyolc óránál hosszabb külföldi tartózkodás esetén napi 40 euró" }]
+require = ["40 euró|40 eur|negyven euró"]
+
+[[questions]]
+id = "k02"
+type = "ekezet"
+split = "tune"
+question = "hany nap szabi jar alapbol"
+sources = [{ doc = "szabadsag-es-tavollet.md", quote = "évente 20 munkanap alapszabadság jár" }]
+require = ["20|húsz"]
+
+[[questions]]
+id = "k03"
+type = "ekezet"
+split = "holdout"
+question = "mennyi a km penz ha sajat autoval megyek kikuldetesre"
+sources = [{ doc = "belfoldi-kikuldetes.md", quote = "kilométerenként 45 forint költségtérítést fizet" }]
+require = ["45"]
+
+[[questions]]
+id = "k04"
+type = "ekezet"
+split = "tune"
+question = "meddig lehet visszakuldeni a webshopban vett termeket"
+sources = [{ doc = "jotallas-es-visszakuldes.md", quote = "az átvétel napjától számított 14 napon belül indokolás nélkül elállhat" }]
+require = ["14|tizennégy"]
+
+[[questions]]
+id = "k05"
+type = "ekezet"
+split = "tune"
+question = "mikor nyit a bemutatoterem szombaton"
+sources = [{ doc = ["ugyfelszolgalati-gyik.md", "bemutatoterem-mukodesi-rendje.md"], quote = "szombaton 9 és 13 óra között" }]
+require = ["9"]
+
+[[questions]]
+id = "k06"
+type = "ekezet"
+split = "holdout"
+question = "kell e jelszot cserelni 90 naponta"
+sources = [{ doc = "informatikai-biztonsag.md", quote = "A jelszavakat nem kell rendszeresen cserélni." }]
+require = ["nem kell"]
+
+[[questions]]
+id = "k07"
+type = "ekezet"
+split = "tune"
+question = "mennyibe kerul a mosogatogep beuzemelese"
+sources = [{ doc = "arlista.md", quote = "Mosogatógép beüzemelése | 14 990 Ft" }]
+require = ["14 990|14990|14.990"]
+
+[[questions]]
+id = "k08"
+type = "ekezet"
+split = "tune"
+question = "mekora a jotalas egy 260 ezres fozolapra"
+sources = [
+  { doc = "jotallas-es-visszakuldes.md", quote = "250 000 forintot meghaladó vételár esetén 3 év" },
+  { doc = "arlista.md", quote = "Indukciós főzőlap IF-4 | 259 990 Ft | 3 év" },
+]
+any_source = true
+require = ["3 év|három év"]
+
+[[questions]]
+id = "k09"
+type = "ekezet"
+split = "holdout"
+question = "hol a gyulekezo hely tuz eseten"
+sources = [{ doc = "munkavedelem-es-tuzvedelem.md", quote = "A gyülekezési hely az épület előtti parkban, a szökőkútnál van." }]
+require = ["szökőkút"]
+
+[[questions]]
+id = "k10"
+type = "ekezet"
+split = "tune"
+question = "elfogadhatok ajandekkartyat beszallitotol?"
+sources = [{ doc = "etikai-kodex.md", quote = "Készpénzt, utalványt és ajándékkártyát értéktől függetlenül tilos elfogadni." }]
+require = ["nem|tilos"]
+
+# ---------------------------------------------------------------------------
+# Follow-up questions: `history` is the earlier question and answer
+
+[[questions]]
+id = "f01"
+type = "folytatas"
+split = "tune"
+history = [
+  "Mennyi a napidíj egy 13 órás belföldi kiküldetésen?",
+  "Tizenkét óránál hosszabb belföldi kiküldetésre napi 5 000 forint napidíj jár.",
+]
+question = "És ha külföldre megyek?"
+sources = [{ doc = "kulfoldi-kikuldetes.md", quote = "nyolc óránál hosszabb külföldi tartózkodás esetén napi 40 euró" }]
+require = ["40 euró|40 eur|negyven euró"]
+
+[[questions]]
+id = "f02"
+type = "folytatas"
+split = "tune"
+history = [
+  "Hány nap szabadság jár gyerek után?",
+  "A tizenhat évesnél fiatalabb gyermek után egy gyermeknél 2, két gyermeknél 4, kettőnél több gyermeknél összesen 7 munkanap pótszabadság jár.",
+]
+question = "És az apának, amikor megszületik a baba?"
+sources = [{ doc = "szabadsag-es-tavollet.md", quote = "10 munkanap apasági szabadság jár" }]
+require = ["10|tíz"]
+
+[[questions]]
+id = "f03"
+type = "folytatas"
+split = "holdout"
+history = [
+  "Mennyi jótállás jár az AK-30 automata kávéfőzőre?",
+  "Az AK-30 automata kávéfőzőre 2 év jótállás jár.",
+]
+question = "Hogyan tudom beküldeni javításra?"
+sources = [{ doc = "jotallas-es-visszakuldes.md", quote = "Kisgépet és kávéfőzőt a bemutatóteremben kell leadni" }]
+require = ["bemutatóterem", "csomagautomat"]
+
+[[questions]]
+id = "f04"
+type = "folytatas"
+split = "tune"
+history = [
+  "Milyen gyakran kell a mosogatógép szűrőjét tisztítani?",
+  "A szűrőt hetente érdemes ellenőrizni és megtisztítani.",
+]
+question = "És mit jelent, ha E2 hibát ír ki?"
+sources = [{ doc = "mosogatogepek-hasznalati-utmutato.md", quote = "Nem ürül a víz" }]
+require = ["nem ürül|nem távozik|leereszt|lefolyó|szűrő"]
+forbid = ["zacc"]
+
+[[questions]]
+id = "f05"
+type = "folytatas"
+split = "tune"
+history = [
+  "Mekkora összegig hagyja jóvá a beszerzést a közvetlen vezető?",
+  "Nettó 100 000 forintig a közvetlen vezető hagyja jóvá a beszerzést, árajánlat nem kell.",
+]
+question = "És ha szoftvert akarok venni?"
+sources = [{ doc = "beszerzesi-szabalyzat.md", quote = "csak az informatikai csoport véleményével lehet beszerezni, értéktől függetlenül" }]
+require = ["informatikai"]
+
+# ---------------------------------------------------------------------------
+# No answer in the documents: the right answer says so
+
+[[questions]]
+id = "n01"
+type = "nincs"
+split = "tune"
+question = "Ki a cég ügyvezetője?"
+
+[[questions]]
+id = "n02"
+type = "nincs"
+split = "tune"
+question = "Mekkora a SZÉP-kártya szálláshely alszámlájára adott havi összeg?"
+note = "Only the hospitality (vendéglátás) sub-account is in the documents."
+
+[[questions]]
+id = "n03"
+type = "nincs"
+split = "holdout"
+question = "Milyen színekben kapható a KR-1000 robotgép?"
+
+[[questions]]
+id = "n04"
+type = "nincs"
+split = "tune"
+question = "Mennyi a felmondási idő a próbaidő alatt?"
+note = "The documents give the notice period (at least 30 days) but say nothing about the probation period."
+
+[[questions]]
+id = "n05"
+type = "nincs"
+split = "tune"
+question = "Mekkora a céges telefon havi adatkerete?"
+
+[[questions]]
+id = "n06"
+type = "nincs"
+split = "holdout"
+question = "Mennyi áramot fogyaszt a HK-180 hűtőszekrény?"
+note = "Consumption figures exist only for the dishwashers."
+
+[[questions]]
+id = "n07"
+type = "nincs"
+split = "tune"
+question = "Jár-e jubileumi jutalom tíz év munkaviszony után?"
+
+[[questions]]
+id = "n08"
+type = "nincs"
+split = "tune"
+question = "Hány fokon kell kimosni a céges pólót?"
+
+[[questions]]
+id = "n09"
+type = "nincs"
+split = "holdout"
+question = "Mennyibe kerül a parkolás a mélygarázsban?"
+note = "The documents say how to book a place, not what it costs."
+
+[[questions]]
+id = "n10"
+type = "nincs"
+split = "tune"
+question = "Milyen nyelven kell levelezni a külföldi beszállítókkal?"
+
+[[questions]]
+id = "n11"
+type = "nincs"
+split = "tune"
+question = "Mennyi a bemutatóterem havi bérleti díja?"
+
+[[questions]]
+id = "n12"
+type = "nincs"
+split = "holdout"
+question = "Mi a jelszava a Pelda-Iroda wifinek?"
+note = "Only the guest network's password is mentioned (ask at reception)."
+
+# ---------------------------------------------------------------------------
+# From a table
+
+[[questions]]
+id = "b01"
+type = "tablazat"
+split = "tune"
+question = "Mennyibe kerül a KF-15 presszó kávéfőző, és meddig szól rá a jótállás?"
+sources = [{ doc = "arlista.md", quote = "Presszó kávéfőző KF-15 | 129 990 Ft | 2 év" }]
+require = ["129 990|129990|129.990", "2 év|két év"]
+
+[[questions]]
+id = "b02"
+type = "tablazat"
+split = "tune"
+question = "Mennyibe kerül a házhozszállítás, és milyen összeg felett ingyenes?"
+sources = [{ doc = "arlista.md", quote = "Házhozszállítás futárral | 1 990 Ft | 50 000 Ft feletti kosárértéknél" }]
+require = ["1 990|1990|1.990", "50 000|50000|50.000|ötvenezer"]
+
+[[questions]]
+id = "b03"
+type = "tablazat"
+split = "holdout"
+question = "Hány teríték fér az MG-60 mosogatógépbe, és mennyi vizet használ az Eco programon?"
+sources = [
+  { doc = "mosogatogepek-hasznalati-utmutato.md", quote = "| Teríték | 10 | 14 |" },
+  { doc = "mosogatogepek-hasznalati-utmutato.md", quote = "Vízfogyasztás az Eco programon | 9,5 liter | 11 liter" },
+]
+require = ["14", "11 liter|11 l"]
+forbid = ["9,5 liter"]

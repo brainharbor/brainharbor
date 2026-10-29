@@ -1,0 +1,38 @@
+# A throwaway Open WebUI for tests/hu/rag/rag.py. It uses the brAInharbor
+# stack's Ollama (start the stack first) and keeps its own data in a volume,
+# so the settings rag.py changes never touch your real Open WebUI.
+#
+#   docker compose -f tests/hu/rag/compose.rag-test.yaml up -d
+#   docker compose -f tests/hu/rag/compose.rag-test.yaml down -v   # remove it and its data
+
+name: brainharbor-ragtest
+
+services:
+  # Not called open-webui: on the stack's network that name would also
+  # answer for the real Open WebUI, and Caddy would send users here.
+  rag-test-webui:
+    image: ghcr.io/open-webui/open-webui:${OPEN_WEBUI_VERSION:-v0.12.4}
+    env_file: ../../../open-webui/defaults.env
+    environment:
+      OLLAMA_BASE_URL: http://ollama:11434
+      WEBUI_SECRET_KEY: ragtest-only
+      ENABLE_OPENAI_API: "false"
+      RAG_EMBEDDING_ENGINE: ollama
+      RAG_EMBEDDING_MODEL: bge-m3
+      # Chunk metadata the model sees in each <source> tag; "source" is the
+      # file name. Read at every start, so changing it needs `up -d` again.
+      RAG_SOURCE_METADATA_KEYS: ${RAG_SOURCE_METADATA_KEYS:-}
+    ports:
+      - "127.0.0.1:3001:8080"
+    volumes:
+      - data:/app/backend/data
+    networks:
+      - brainharbor
+
+networks:
+  brainharbor:
+    name: brainharbor_default
+    external: true
+
+volumes:
+  data:

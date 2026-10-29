@@ -1,0 +1,40 @@
+# Példa Kft. – Belföldi kiküldetési szabályzat
+
+Hatályos: 2026. március 1-jétől
+Kiadta: a pénzügyi osztály
+
+## 1. A szabályzat hatálya
+
+A szabályzat a Példa Kft. munkavállalóinak belföldi kiküldetéseire vonatkozik. Kiküldetésnek az a munkavégzés számít, amelyet a munkavállaló a vezető megbízásából a szokásos munkahelyén kívül végez. A külföldi kiküldetésekről külön szabályzat rendelkezik.
+
+Nem kiküldetés a munkába járás, a távmunka, és az sem, ha a munkavállaló a cég két budapesti telephelye (az iroda és a raktár) között közlekedik.
+
+## 2. A kiküldetés jóváhagyása
+
+A kiküldetést a közvetlen vezető hagyja jóvá, legalább öt munkanappal az utazás előtt. Sürgős esetben a jóváhagyás telefonon is megadható, de a következő munkanapon az utazási rendszerben is rögzíteni kell. Két napnál hosszabb kiküldetéshez az osztályvezető jóváhagyása is szükséges.
+
+## 3. Közlekedés
+
+Elsősorban tömegközlekedéssel kell utazni. A vonatjegy árát másodosztályon térítjük meg; első osztályon csak akkor, ha az utazás három óránál hosszabb. Saját gépkocsit csak a vezető előzetes engedélyével lehet használni, ilyenkor a cég kilométerenként 45 forint költségtérítést fizet. A taxi költségét két esetben térítjük meg: ha az utazás este 10 és reggel 6 óra közé esik, vagy ha az úti cél tömegközlekedéssel nem érhető el.
+
+A céges kisbuszt a raktárvezetőnél lehet lefoglalni. A kisbuszt csak olyan munkatárs vezetheti, akinek legalább három éve van B kategóriás jogosítványa.
+
+## 4. Szállás
+
+Szállás akkor vehető igénybe, ha a kiküldetés helye 100 kilométernél messzebb van a munkahelytől, vagy ha a munka két egymást követő napon tart. Egy éjszaka szállásköltsége reggelivel együtt legfeljebb 30 000 forint lehet. A szállást az irodai asszisztens foglalja le; a munkavállaló saját foglalását csak kivételes esetben fogadjuk el.
+
+## 5. Napidíj
+
+A kiküldetés idejére napidíj jár. Összege naponta: hat és tizenkét óra közötti kiküldetésnél 3 000 forint, tizenkét óránál hosszabb kiküldetésnél 5 000 forint. Hat óránál rövidebb kiküldetésre nem jár napidíj. A napidíjat a havi bérrel együtt fizetjük ki.
+
+## 6. Elszámolás
+
+A kiküldetés költségeit a hazaérkezést követő 10 munkanapon belül kell elszámolni az utazási rendszerben. Az elszámoláshoz csatolni kell a számlák és a jegyek másolatát, saját gépkocsi használata esetén pedig a kitöltött útnyilvántartást is. A határidő után benyújtott elszámolást csak az osztályvezető engedélyével fogadjuk el.
+
+## 7. Előleg
+
+Ha a kiküldetés várható költsége meghaladja az 50 000 forintot, a munkavállaló az utazás előtt előleget kérhet a pénzügyi osztálytól. Az előleggel a kiküldetés elszámolásakor kell elszámolni, a fel nem használt összeget 5 munkanapon belül vissza kell fizetni.
+
+## 8. Kérdések
+
+A szabályzattal kapcsolatos kérdéseket a pénzügyi osztálynak lehet feltenni a penzugy@pelda.hu címen.

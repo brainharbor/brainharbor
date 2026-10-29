@@ -21,9 +21,10 @@ jobs:
           docker compose config --quiet
           COMPOSE_FILE=compose.yaml docker compose config --quiet
           COMPOSE_FILE=compose.yaml:compose.gpu.yaml:compose.ollama-api.yaml docker compose config --quiet
+          docker compose -f tests/hu/rag/compose.rag-test.yaml config --quiet
 
       - name: Hungarian system prompt in sync
         run: python3 tests/check_prompts.py
 
       - name: Python syntax
-        run: python3 -m py_compile tests/hu/run.py tests/check_prompts.py
+        run: python3 -m py_compile tests/hu/run.py tests/hu/rag/rag.py tests/check_prompts.py
