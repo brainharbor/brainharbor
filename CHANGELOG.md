@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **Open WebUI v0.12.5** instead of v0.12.4: security fixes. Existing
+  installs update with `docker compose pull open-webui` and
+  `docker compose up -d`. It has no database changes, so going back only
+  needs `OPEN_WEBUI_VERSION=v0.12.4` in `.env`.
 - **New default model:** `brainharbor-hu` is now built on qwen3.5:35b-a3b
   instead of gemma4:26b. In a deeper Hungarian test (13 tasks, 208 answers)
   it made fewer mistakes and answered faster. It is a 22 GB download, tested

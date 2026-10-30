@@ -11,7 +11,7 @@ services:
   # Not called open-webui: on the stack's network that name would also
   # answer for the real Open WebUI, and Caddy would send users here.
   rag-test-webui:
-    image: ghcr.io/open-webui/open-webui:${OPEN_WEBUI_VERSION:-v0.12.4}
+    image: ghcr.io/open-webui/open-webui:${OPEN_WEBUI_VERSION:-v0.12.5}
     env_file: ../../../open-webui/defaults.env
     environment:
       OLLAMA_BASE_URL: http://ollama:11434
