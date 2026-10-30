@@ -6,7 +6,7 @@ Privát AI-asszisztens kis csapatoknak, a saját gépeden. Helyi nyelvi
 modellekkel beszélgethetsz, és a saját dokumentumaidban kereshetsz úgy,
 hogy semmi sem kerül ki felhőszolgáltatáshoz.
 
-> Állapot: **v0.1.0**, az első kiadás. Az 1.0-ig még lehetnek nem
+> Állapot: **v0.2.0**. Az 1.0-ig még lehetnek nem
 > visszafelé kompatibilis változások; frissítés előtt olvasd el a
 > [változásnaplót](CHANGELOG.md).
 

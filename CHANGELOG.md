@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.2.0 (2026-10-30)
 
 - **Open WebUI v0.12.5** instead of v0.12.4: security fixes. Existing
   installs update with `docker compose pull open-webui` and

@@ -6,7 +6,7 @@ A private AI assistant for small teams, running on your own hardware.
 Chat with local language models and search your own documents, without
 sending anything to a cloud service.
 
-> Status: **v0.1.0**, the first release. Things may still change in
+> Status: **v0.2.0**. Things may still change in
 > incompatible ways before 1.0; read the [changelog](CHANGELOG.md) before
 > upgrading.
 

@@ -10,7 +10,7 @@ jobs:
   checks:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Shell scripts (shellcheck)
         run: shellcheck -x scripts/*.sh scripts/lib/common.sh
